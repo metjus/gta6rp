@@ -1,9 +1,0 @@
----
-# cPanel "Git Version Control" deployment for gta6rp.sk.
-# DEPLOYPATH must be the document root of gta6rp.sk (cPanel → Domains).
-# If the folder does not exist, the deploy stops instead of writing elsewhere.
-deployment:
-  tasks:
-    - export DEPLOYPATH=$HOME/gta6rp.sk/
-    - test -d "$DEPLOYPATH"
-    - /bin/cp -R web/. "$DEPLOYPATH"
