@@ -5,43 +5,6 @@ POSTS = [
 {
 "date": "2026-10-28",
 "sk": {
-"slug": "gta-6-radio-stanice",
-"cat": "GTA VI",
-"title": "Rádio v GTA 6: šesť staníc, podcasty a hudba aj pešo",
-"desc": "Rockstar odhalil prvých šesť rádiových staníc GTA VI: od moderného latino cez renegade country až po metal. Pridáva sa aj počúvanie podcastov pešo.",
-"lead": "Rádio je od čias Vice City neoddeliteľnou súčasťou série. Rockstar 8. októbra 2026 predstavil prvých šesť staníc z Leonidy a pár noviniek, ktoré to celé posúvajú ďalej.",
-"body": """
-<section><h2>Cocoteo FM</h2><p>Moderná latino hudba: bachata, merengue, dembow a reggaeton. Moderujú ju El Martillo a La Gata, za ktorými stoja Bad Bunny a RaiNao.</p></section>
-<section><h2>Back Country Radio</h2><p>Renegade country pre všetkých, ktorí sa pohybujú okolo Grassrivers a Port Gellhorn. Hostia MW a Delta Dawne, za ktorými stoja Morgan Wallen a Lana Del Rey. Súčasťou je aj reportér Mud Dog Mike, ktorý z člna v močiaroch hlási počasie.</p></section>
-<section><h2>AfroBank FM</h2><p>Africká hudba od klasiky 20. storočia až po moderné žánre ako amapiano a 3-step. Moderujú Burna a Palmsy, pričom prvý z nich je Burna Boy.</p></section>
-<section><h2>The Chamber 106.6</h2><p>Metal od osemdesiatych rokov vyššie, s moderátormi DJ Kerry a DJ Tom. V skutočnosti sú to Kerry King a Tom Araya zo skupiny Slayer.</p></section>
-<section><h2>Flash FM</h2><p>Pop a dance. Názov fanúšikovia poznajú z GTA: Vice City z roku 2002, teraz ho moderujú Robyn a Alex Consani.</p></section>
-<section><h2>Dirty South Classics</h2><p>Regionálny rap a hip-hop so zameraním na juh USA. Hostia Trick a Trina, teda Trick Daddy a Trina.</p></section>
-<section><h2>Podcasty a hudba aj pešo</h2><p>Rockstar potvrdil on-demand podcasty pre Jasona a Luciu. Novinkou je, že rádio a podcasty sa dajú počúvať aj mimo auta, cez slúchadlá pripojené k mobilu postavy.</p></section>
-<div class="fact-box"><p><strong>Pre RP:</strong> Hudobný vkus je skvelý spôsob, ako postavu oživiť. Ľudia z Ambrosie počúvajú iné stanice než influencerka z Vice City. Nápady na postavu nájdeš aj v <a href="/blog/napady-na-rp-postavu-leonida/">7 nápadoch na RP postavu</a>. Informácie sú z oficiálneho oznámenia Rockstar Games z 8. októbra 2026. Ďalšie detaily má Rockstar ešte zverejniť.</p></div>
-""",
-},
-"en": {
-"slug": "gta-6-radio-stations",
-"cat": "GTA VI",
-"title": "GTA 6 radio: six stations, podcasts and music on foot",
-"desc": "Rockstar revealed the first six GTA VI radio stations, from modern Latin to renegade country and metal. Podcasts you can also listen to on foot.",
-"lead": "Radio has been a core part of the series since Vice City. On October 8, 2026, Rockstar introduced the first six stations from Leonida and a few new features that take it further.",
-"body": """
-<section><h2>Cocoteo FM</h2><p>Modern Latin music: bachata, merengue, dembow and reggaeton. Hosted by El Martillo and La Gata, who are Bad Bunny and RaiNao.</p></section>
-<section><h2>Back Country Radio</h2><p>Renegade country for anyone moving around Grassrivers and Port Gellhorn. Hosts MW and Delta Dawne, who are Morgan Wallen and Lana Del Rey. It also features Mud Dog Mike, a reporter who delivers the swamp weather from an airboat.</p></section>
-<section><h2>AfroBank FM</h2><p>African music from 20th-century classics to modern styles such as amapiano and 3-step. Hosted by Burna and Palmsy, the first of whom is Burna Boy.</p></section>
-<section><h2>The Chamber 106.6</h2><p>Metal from the eighties onward, with hosts DJ Kerry and DJ Tom. In reality, they're Kerry King and Tom Araya of Slayer.</p></section>
-<section><h2>Flash FM</h2><p>Pop and dance. Fans know the name from GTA: Vice City in 2002, and this time it's hosted by Robyn and Alex Consani.</p></section>
-<section><h2>Dirty South Classics</h2><p>Regional rap and hip-hop with a focus on the American South. Hosts Trick and Trina, meaning Trick Daddy and Trina.</p></section>
-<section><h2>Podcasts and music on foot</h2><p>Rockstar confirmed on-demand podcasts for Jason and Lucia. The new part is that radio and podcasts can be played outside the car too, through headphones connected to the character's phone.</p></section>
-<div class="fact-box"><p><strong>For RP:</strong> Musical taste is a great way to bring a character to life. People from Ambrosia listen to different stations than a Vice City influencer. More ideas in <a href="/en/blog/rp-character-ideas-leonida/">7 RP character ideas</a>. This is based on Rockstar Games' official announcement from October 8, 2026, with more details still to come from Rockstar.</p></div>
-""",
-},
-},
-{
-"date": "2026-10-28",
-"sk": {
 "slug": "chyby-novych-rp-hracov",
 "cat": "Roleplay",
 "title": "5 chýb, ktoré robia noví RP hráči, a ako sa im vyhnúť",
