@@ -1,5 +1,5 @@
 DirectoryIndex index.html
-Options -Indexes
+Options -Indexes +FollowSymLinks
 ErrorDocument 404 /404.html
 # Repository files that are not part of the website.
 RedirectMatch 404 ^/(?:zdroj(?:/|$)|README\.md$|\.git)
