@@ -5,6 +5,39 @@ POSTS = [
 {
 "date": "2026-10-28",
 "sk": {
+"slug": "chyby-novych-rp-hracov",
+"cat": "Roleplay",
+"title": "5 chýb, ktoré robia noví RP hráči, a ako sa im vyhnúť",
+"desc": "Začínaš s GTA roleplayom? Päť najčastejších chýb nováčikov, od nepripravenej postavy po miešanie IC a OOC, a ako sa im vyhnúť.",
+"lead": "Každý RP hráč kedysi začínal a väčšina urobila tie isté chyby. Dobrá správa je, že sa dajú ľahko obísť.",
+"body": """
+<section><h2>1. Postava bez minulosti</h2><p>Prísť na server s menom a nič viac je rýchle, ale po hodine nebudeš vedieť, čo tvoja postava vlastne chce. Stačí pár viet: odkiaľ je, čo robí a čo ju trápi. Pomôže ti <a href="/rp/tvorba-postavy/">dielňa postáv</a>.</p></section>
+<section><h2>2. Miešanie IC a OOC</h2><p>To, čo hráč počul v hlasovom čete mimo hry, jeho postava vedieť nemôže. Ak sa tieto dve roviny miešajú, scéna stráca zmysel a ostatní sa nahnevajú. Rozdiel vysvetľuje <a href="/rp/ic-ooc/">IC vs. OOC</a>.</p></section>
+<section><h2>3. Hranie „na výhru“</h2><p>RP nie je súťaž. Postava, ktorá nikdy neprehrá, nezdrhne ani sa nepomýli, je nudná pre všetkých okolo. Príbehy vznikajú z porážok, omylov a zlých rozhodnutí.</p></section>
+<section><h2>4. Ignorovanie pravidiel a whitelistu</h2><p>Pravidlá sú nudné čítanie, ale ušetria ti kopu problémov. Na mnohých serveroch navyše treba prejsť whitelistom, a ten sa dá zvládnuť, ak vieš, čo čakať. Pozri si <a href="/rp/navody/whitelist/">návod na whitelist</a>.</p></section>
+<section><h2>5. Hra bez spoluhráčov</h2><p>Sólo príbeh na serveri plnom ľudí je premárnená šanca. Vytvor scénu, do ktorej sa môžu zapojiť aj iní, nechaj im priestor reagovať a neprepisuj ich postavy. Základy nájdeš v <a href="/rp/navody/sceny/">návode na scény</a>.</p></section>
+<div class="fact-box"><p><strong>Dobré vedieť:</strong> Pravidlá a zvyklosti sa medzi komunitami líšia. Vždy si najprv prečítaj pravidlá konkrétneho servera, na ktorom hráš. Slovník základných pojmov nájdeš v <a href="/rp/pojmy/">RP pojmoch</a>.</p></div>
+""",
+},
+"en": {
+"slug": "new-rp-player-mistakes",
+"cat": "Roleplay",
+"title": "5 mistakes new RP players make, and how to avoid them",
+"desc": "Starting with GTA roleplay? The five most common beginner mistakes, from an unprepared character to mixing IC and OOC, and how to avoid them.",
+"lead": "Every RP player started somewhere, and most of us made the same mistakes. The good news is they're easy to avoid.",
+"body": """
+<section><h2>1. A character with no past</h2><p>Showing up with a name and nothing else is quick, but an hour later you won't know what your character actually wants. A few sentences are enough: where they're from, what they do and what's bothering them. The <a href="/en/rp/character-builder/">character builder</a> can help.</p></section>
+<section><h2>2. Mixing IC and OOC</h2><p>What a player heard in an out-of-game voice chat, their character can't know. When the two levels blur, scenes fall apart and other players get frustrated. The difference is explained in <a href="/en/rp/ic-ooc/">IC vs. OOC</a>.</p></section>
+<section><h2>3. Playing to win</h2><p>RP isn't a competition. A character who never loses, never runs and never gets it wrong is boring for everyone around them. Stories come from defeats, mistakes and bad decisions.</p></section>
+<section><h2>4. Ignoring the rules and the whitelist</h2><p>Rules are dull reading, but they save you a lot of trouble. Many servers also require a whitelist, which is very doable if you know what to expect. See the <a href="/en/rp/guides/whitelist/">whitelist guide</a>.</p></section>
+<section><h2>5. Playing without your fellow players</h2><p>A solo story on a server full of people is a wasted chance. Create scenes others can join, leave them room to react and don't write their characters for them. You'll find the basics in the <a href="/en/rp/guides/scenes/">scenes guide</a>.</p></section>
+<div class="fact-box"><p><strong>Good to know:</strong> Rules and customs differ between communities. Always read the rules of the specific server you play on first. A glossary of the basic terms is in <a href="/en/rp/glossary/">RP terms</a>.</p></div>
+""",
+},
+},
+{
+"date": "2026-10-28",
+"sk": {
 "slug": "gta-6-cesta-k-vydaniu",
 "cat": "GTA VI",
 "title": "Od úniku po 19. november: cesta GTA 6 k vydaniu",

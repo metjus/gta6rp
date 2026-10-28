@@ -27,6 +27,7 @@ Dielňa postáv ukladá koncept len v prehliadači návštevníka a umožňuje s
 ## Blog
 
 - [Blog](https://gta6rp.sk/blog/): Zaujímavosti o GTA VI a roleplayi.
+- [5 chýb, ktoré robia noví RP hráči, a ako sa im vyhnúť](https://gta6rp.sk/blog/chyby-novych-rp-hracov/): Začínaš s GTA roleplayom? Päť najčastejších chýb nováčikov, od nepripravenej postavy po miešanie IC a OOC, a ako sa im vyhnúť.
 - [Od úniku po 19. november: cesta GTA 6 k vydaniu](https://gta6rp.sk/blog/gta-6-cesta-k-vydaniu/): Uniknuté videá, rekordné trailery a dva odklady. Prejdi si najdôležitejšie míľniky GTA 6 od prvého potvrdenia až po dátum vydania.
 - [Leonida: šesť miest, ktoré už poznáme](https://gta6rp.sk/blog/leonida-regiony/): Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia a Mount Kalaga. Čo vieme o regiónoch štátu Leonida v GTA 6.
 - [Kto je kto v GTA 6: Jason, Lucia a ľudia okolo nich](https://gta6rp.sk/blog/postavy-gta-6/): Jason Duval, Lucia Caminos, Cal, Boobie, Dre'Quan, Real Dimez, Raul a Brian. Prehľad postáv, ktoré Rockstar oficiálne predstavil.
@@ -59,6 +60,7 @@ The website is available in Slovak and English. English pages have their own can
 ## English blog
 
 - [Blog](https://gta6rp.sk/en/blog/): GTA VI and roleplay facts.
+- [5 mistakes new RP players make, and how to avoid them](https://gta6rp.sk/en/blog/new-rp-player-mistakes/): Starting with GTA roleplay? The five most common beginner mistakes, from an unprepared character to mixing IC and OOC, and how to avoid them.
 - [From a leak to November 19: GTA 6's road to release](https://gta6rp.sk/en/blog/gta-6-road-to-release/): Leaked footage, record-breaking trailers and two delays. The key milestones of GTA 6, from the first confirmation to its release date.
 - [Leonida: the six places we already know](https://gta6rp.sk/en/blog/leonida-regions/): Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia and Mount Kalaga. What we know about the regions of GTA 6's state of Leonida.
 - [Who's who in GTA 6: Jason, Lucia and the people around them](https://gta6rp.sk/en/blog/gta-6-characters/): Jason Duval, Lucia Caminos, Cal, Boobie, Dre'Quan, Real Dimez, Raul and Brian. The characters Rockstar has officially introduced.
