@@ -1,0 +1,66 @@
+# GTA6RP.sk
+
+> Slovenský web o GTA VI a roleplayi: informácie o hre, RP pojmy, návody a tvorba lore postavy.
+
+Hlavná adresa: https://gta6rp.sk/
+Jazyk obsahu: slovenčina.
+
+Web poskytuje všeobecné RP návody a prípravu postavy. Katalóg GTA VI RP serverov je plánovaná funkcia, nie aktuálne dostupná služba. Vysvetlenia RP pravidiel a príkazov nie sú potvrdením funkcií GTA VI; ich používanie závisí od konkrétnej komunity. Aktuálne údaje o vydaní a dostupnosti hry treba overovať u Rockstar Games.
+
+Dielňa postáv ukladá koncept len v prehliadači návštevníka a umožňuje stiahnuť textový súbor. Neodosiela prihlášku na server.
+
+## Hra a roleplay
+
+- [GTA 6 a roleplay po slovensky](https://gta6rp.sk/): Úvod, informácie o hre, odpočet a plánovaný obsah webu.
+- [Svet roleplayu](https://gta6rp.sk/rp/): Čo je RP a ako začať.
+- [RP slovník](https://gta6rp.sk/rp/pojmy/): 26 pojmov a príkazov vrátane IC, OOC, /me, /do, /try a /doc.
+- [IC a OOC](https://gta6rp.sk/rp/ic-ooc/): Rozdiel medzi hráčom a postavou, metagaming a praktické príklady.
+
+## Lore a návody
+
+- [Ako napísať lore postavy](https://gta6rp.sk/rp/lore-postavy/): Minulosť, motivácia, ciele, slabosti a príklad postavy.
+- [Dielňa postáv](https://gta6rp.sk/rp/tvorba-postavy/): Interaktívna šablóna so siedmimi otázkami, uložením a exportom TXT.
+- [Prvý RP server](https://gta6rp.sk/rp/navody/prvy-server/): Príprava na vstup do RP komunity.
+- [Whitelist](https://gta6rp.sk/rp/navody/whitelist/): Príprava na prijímací proces komunity.
+- [Spoločné RP scény](https://gta6rp.sk/rp/navody/sceny/): Priestor pre ostatných hráčov a spoločné rozvíjanie príbehu.
+
+## Blog
+
+- [Blog](https://gta6rp.sk/blog/): Zaujímavosti o GTA VI a roleplayi.
+- [Od úniku po 19. november: cesta GTA 6 k vydaniu](https://gta6rp.sk/blog/gta-6-cesta-k-vydaniu/): Uniknuté videá, rekordné trailery a dva odklady. Prejdi si najdôležitejšie míľniky GTA 6 od prvého potvrdenia až po dátum vydania.
+- [Leonida: šesť miest, ktoré už poznáme](https://gta6rp.sk/blog/leonida-regiony/): Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia a Mount Kalaga. Čo vieme o regiónoch štátu Leonida v GTA 6.
+- [Kto je kto v GTA 6: Jason, Lucia a ľudia okolo nich](https://gta6rp.sk/blog/postavy-gta-6/): Jason Duval, Lucia Caminos, Cal, Boobie, Dre'Quan, Real Dimez, Raul a Brian. Prehľad postáv, ktoré Rockstar oficiálne predstavil.
+- [Od SA-MP po FiveM: ako vznikol GTA roleplay](https://gta6rp.sk/blog/historia-gta-roleplay/): GTA roleplay nevymyslel Rockstar, ale komunita. Krátka história RP serverov od San Andreas Multiplayer cez NoPixel až po FiveM.
+- [7 nápadov na RP postavu, ktoré sa hodia do Leonidy](https://gta6rp.sk/blog/napady-na-rp-postavu-leonida/): Hľadáš inšpiráciu na postavu do GTA 6 RP? Sedem nápadov inšpirovaných miestami a témami Leonidy, každý s cieľom a slabosťou.
+
+## Optional
+
+- [Mapa webu](https://gta6rp.sk/sitemap.xml): Úplný zoznam publikovaných stránok.
+- [Pravidlá pre roboty](https://gta6rp.sk/robots.txt): Pokyny na prehľadávanie webu.
+- [Rockstar Games — GTA VI](https://www.rockstargames.com/VI): Primárny zdroj informácií o hre.
+
+
+## English version
+
+The website is available in Slovak and English. English pages have their own canonical URLs and reciprocal hreflang links. These guides describe general roleplay principles, not confirmed GTA VI multiplayer features. The server directory is planned, not currently available.
+
+- [English homepage](https://gta6rp.sk/en/): GTA VI information and countdown.
+- [Roleplay for beginners](https://gta6rp.sk/en/rp/): Getting started with RP.
+- [RP glossary](https://gta6rp.sk/en/rp/glossary/): 26 roleplay terms and commands. Explains metagaming, powergaming, RDM, VDM, Fail RP, Fear RP and NLR with examples.
+- [RP príkazy](https://gta6rp.sk/rp/prikazy/): Použitie /me, /do, /try, /doc a /report, ukážková scéna a časté chyby.
+- [RP command guide](https://gta6rp.sk/en/rp/commands/): Five commands explained with examples, a shared scene and common mistakes.
+- [IC and OOC](https://gta6rp.sk/en/rp/ic-ooc/): Player knowledge vs character knowledge.
+- [Character backstory](https://gta6rp.sk/en/rp/character-backstory/): Writing lore, with an example.
+- [Character builder](https://gta6rp.sk/en/rp/character-builder/): Seven-question template, browser storage and text export.
+- [First RP server](https://gta6rp.sk/en/rp/guides/first-server/): Choosing a community.
+- [Whitelist](https://gta6rp.sk/en/rp/guides/whitelist/): Preparing an application or interview.
+- [Shared scenes](https://gta6rp.sk/en/rp/guides/scenes/): Collaborative storytelling.
+
+## English blog
+
+- [Blog](https://gta6rp.sk/en/blog/): GTA VI and roleplay facts.
+- [From a leak to November 19: GTA 6's road to release](https://gta6rp.sk/en/blog/gta-6-road-to-release/): Leaked footage, record-breaking trailers and two delays. The key milestones of GTA 6, from the first confirmation to its release date.
+- [Leonida: the six places we already know](https://gta6rp.sk/en/blog/leonida-regions/): Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia and Mount Kalaga. What we know about the regions of GTA 6's state of Leonida.
+- [Who's who in GTA 6: Jason, Lucia and the people around them](https://gta6rp.sk/en/blog/gta-6-characters/): Jason Duval, Lucia Caminos, Cal, Boobie, Dre'Quan, Real Dimez, Raul and Brian. The characters Rockstar has officially introduced.
+- [From SA-MP to FiveM: how GTA roleplay began](https://gta6rp.sk/en/blog/gta-roleplay-history/): GTA roleplay wasn't invented by Rockstar but by the community. A short history of RP servers, from San Andreas Multiplayer through NoPixel to FiveM.
+- [7 RP character ideas that fit Leonida](https://gta6rp.sk/en/blog/rp-character-ideas-leonida/): Looking for a GTA 6 RP character idea? Seven concepts inspired by the places and themes of Leonida, each with a goal and a weakness.

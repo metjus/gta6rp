@@ -1,0 +1,118 @@
+DirectoryIndex index.html
+Options -Indexes
+ErrorDocument 404 /404.html
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{THE_REQUEST} \s/+rp/prikazy(?:\.html)?(?:[?\s]) [NC]
+RewriteRule ^rp/prikazy(?:\.html)?$ https://gta6rp.sk/rp/prikazy/ [R=301,L]
+RewriteCond %{THE_REQUEST} \s/+en/rp/commands(?:\.html)?(?:[?\s]) [NC]
+RewriteRule ^en/rp/commands(?:\.html)?$ https://gta6rp.sk/en/rp/commands/ [R=301,L]
+# Redirect only an explicitly requested index.html, never an internal DirectoryIndex lookup.
+RewriteCond %{THE_REQUEST} \s/+[^\s?]*index\.html(?:[?\s]) [NC]
+RewriteRule ^index\.html$ https://gta6rp.sk/ [R=301,L]
+RewriteCond %{THE_REQUEST} \s/+[^\s?]*index\.html(?:[?\s]) [NC]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)/index\.html$ https://gta6rp.sk/$1/ [R=301,L]
+
+# Alternate .html addresses for the nine published pages.
+RewriteCond %{THE_REQUEST} \s/+[^\s?]*\.html(?:[?\s]) [NC]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)\.html$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^rp/navody/lore(?:/|\.html)?$ https://gta6rp.sk/rp/lore-postavy/ [R=301,L]
+
+# One canonical hostname and HTTPS. Preserve query strings automatically.
+RewriteCond %{HTTP_HOST} !^gta6rp\.sk$ [NC]
+RewriteRule ^ https://gta6rp.sk%{REQUEST_URI} [R=301,L]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !^https$ [NC]
+RewriteRule ^ https://gta6rp.sk%{REQUEST_URI} [R=301,L]
+
+# Language on the server (replaces the old JavaScript redirect that broke PageSpeed).
+# 1) explicit ?lang=en
+RewriteCond %{QUERY_STRING} (?:^|&)lang=en(?:&|$) [NC]
+RewriteRule ^$ https://gta6rp.sk/en/ [R=302,L,QSD]
+# 2) visitor already picked English with the language switch
+RewriteCond %{QUERY_STRING} !(?:^|&)lang=sk(?:&|$) [NC]
+RewriteCond %{HTTP_COOKIE} (?:^|;\s*)gta6rp_language=en(?:;|$)
+RewriteRule ^$ https://gta6rp.sk/en/ [R=302,L]
+# 3) first visit from outside Slovakia/Czechia (Cloudflare country), search engine bots excluded
+RewriteCond %{QUERY_STRING} !(?:^|&)lang=sk(?:&|$) [NC]
+RewriteCond %{HTTP_COOKIE} !gta6rp_language=
+RewriteCond %{HTTP_USER_AGENT} !(?:bot|crawl|spider|slurp|facebookexternalhit|embedly|preview|whatsapp|telegram) [NC]
+RewriteCond %{HTTP:CF-IPCountry} ^[A-Z]{2}$
+RewriteCond %{HTTP:CF-IPCountry} !^(?:SK|CZ|XX|T1)$
+RewriteRule ^$ https://gta6rp.sk/en/ [R=302,L]
+# 4) without Cloudflare: browser language other than Slovak/Czech
+RewriteCond %{QUERY_STRING} !(?:^|&)lang=sk(?:&|$) [NC]
+RewriteCond %{HTTP_COOKIE} !gta6rp_language=
+RewriteCond %{HTTP_USER_AGENT} !(?:bot|crawl|spider|slurp|facebookexternalhit|embedly|preview|whatsapp|telegram) [NC]
+RewriteCond %{HTTP:CF-IPCountry} ^$
+RewriteCond %{HTTP:Accept-Language} ^[a-z]
+RewriteCond %{HTTP:Accept-Language} !^(?:sk|cs)\b [NC]
+RewriteRule ^$ https://gta6rp.sk/en/ [R=302,L]
+
+# Blog (SK /blog/, EN /en/blog/): clean addresses with a trailing slash.
+RewriteCond %{THE_REQUEST} \s/+(?:en/)?blog(?:/index)?\.html(?:[?\s]) [NC]
+RewriteRule ^(en/)?blog(?:/index)?\.html$ https://gta6rp.sk/$1blog/ [R=301,L]
+RewriteCond %{THE_REQUEST} \s/+(?:en/)?blog/[a-z0-9-]+\.html(?:[?\s]) [NC]
+RewriteRule ^((?:en/)?blog/[a-z0-9-]+)\.html$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^((?:en/)?blog(?:/[a-z0-9-]+)?)$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^((?:en/)?blog)/$ $1.html [L]
+RewriteRule ^((?:en/)?blog/[a-z0-9-]+)/$ $1.html [L]
+
+# Canonical trailing slash for published pages, without rewriting missing URLs.
+RewriteRule ^rp/prikazy/$ rp/prikazy.html [L]
+RewriteRule ^en/rp/commands/$ en/rp/commands.html [L]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^api/servers/?$ - [G,L]
+# English pages: explicit .html URLs redirect to their public canonical address.
+RewriteCond %{THE_REQUEST} \s/+en/(?:home|index)\.html(?:[?\s]) [NC]
+RewriteRule ^en/(?:home|index)\.html$ https://gta6rp.sk/en/ [R=301,L]
+RewriteCond %{THE_REQUEST} \s/+en/[^\s?]*\.html(?:[?\s]) [NC]
+RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes)))?)\.html$ https://gta6rp.sk/en/$1/ [R=301,L]
+RewriteRule ^en$ https://gta6rp.sk/en/ [R=301,L]
+RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes)))?)$ https://gta6rp.sk/en/$1/ [R=301,L]
+RewriteRule ^en/$ en/home.html [L]
+RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes)))?)/$ en/$1.html [L]
+
+# Serve named HTML files behind clean public addresses (internal, no redirect).
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)/$ $1.html [L]
+</IfModule>
+<IfModule mod_headers.c>
+Header set Link "<https://gta6rp.sk/llms.txt>; rel=\"describedby\""
+</IfModule>
+<IfModule mod_mime.c>
+AddType application/javascript .js
+AddType application/manifest+json .webmanifest
+AddCharset UTF-8 .html .css .js .xml .txt
+</IfModule>
+
+# Compress text responses when the hosting enables mod_deflate.
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript text/javascript application/json application/xml text/xml image/svg+xml application/manifest+json image/x-icon
+</IfModule>
+<IfModule mod_mime.c>
+AddType image/webp .webp
+AddType image/avif .avif
+AddType font/woff2 .woff2
+</IfModule>
+# Files under /assets/ are referenced with ?v=<hash>, so browsers may keep them for a year.
+# When you replace a file there, change its name or the ?v= value in the HTML.
+<IfModule mod_headers.c>
+<FilesMatch "\.(?:css|js|png|jpe?g|webp|avif|svg|ico|woff2)$">
+Header set Cache-Control "public, max-age=604800"
+</FilesMatch>
+<If "%{REQUEST_URI} =~ m#^/assets/#">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</If>
+<FilesMatch "\.webmanifest$">
+Header set Cache-Control "public, max-age=86400"
+</FilesMatch>
+<FilesMatch "\.(?:html|xml|txt)$">
+Header set Cache-Control "no-cache"
+</FilesMatch>
+<If "%{REQUEST_URI} in {'/', '/index.html'}">
+Header always append Vary "Cookie, CF-IPCountry, Accept-Language"
+</If>
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
