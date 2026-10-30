@@ -13,11 +13,11 @@ RewriteRule ^en/rp/commands(?:\.html)?$ https://gta6rp.sk/en/rp/commands/ [R=301
 RewriteCond %{THE_REQUEST} \s/+[^\s?]*index\.html(?:[?\s]) [NC]
 RewriteRule ^index\.html$ https://gta6rp.sk/ [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+[^\s?]*index\.html(?:[?\s]) [NC]
-RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)/index\.html$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny|ems|policia)))?)/index\.html$ https://gta6rp.sk/$1/ [R=301,L]
 
 # Alternate .html addresses for the nine published pages.
 RewriteCond %{THE_REQUEST} \s/+[^\s?]*\.html(?:[?\s]) [NC]
-RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)\.html$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny|ems|policia)))?)\.html$ https://gta6rp.sk/$1/ [R=301,L]
 RewriteRule ^rp/navody/lore(?:/|\.html)?$ https://gta6rp.sk/rp/lore-postavy/ [R=301,L]
 
 # One canonical hostname and HTTPS. Preserve query strings automatically.
@@ -63,20 +63,20 @@ RewriteRule ^((?:en/)?blog/[a-z0-9-]+)/$ $1.html [L]
 # Canonical trailing slash for published pages, without rewriting missing URLs.
 RewriteRule ^rp/prikazy/$ rp/prikazy.html [L]
 RewriteRule ^en/rp/commands/$ en/rp/commands.html [L]
-RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny|ems|policia)))?)$ https://gta6rp.sk/$1/ [R=301,L]
 RewriteRule ^api/servers/?$ - [G,L]
 # English pages: explicit .html URLs redirect to their public canonical address.
 RewriteCond %{THE_REQUEST} \s/+en/(?:home|index)\.html(?:[?\s]) [NC]
 RewriteRule ^en/(?:home|index)\.html$ https://gta6rp.sk/en/ [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+en/[^\s?]*\.html(?:[?\s]) [NC]
-RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes)))?)\.html$ https://gta6rp.sk/en/$1/ [R=301,L]
+RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes|ems|police)))?)\.html$ https://gta6rp.sk/en/$1/ [R=301,L]
 RewriteRule ^en$ https://gta6rp.sk/en/ [R=301,L]
-RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes)))?)$ https://gta6rp.sk/en/$1/ [R=301,L]
+RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes|ems|police)))?)$ https://gta6rp.sk/en/$1/ [R=301,L]
 RewriteRule ^en/$ en/home.html [L]
-RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes)))?)/$ en/$1.html [L]
+RewriteRule ^en/(rp(?:/(?:glossary|ic-ooc|character-backstory|character-builder|guides/(?:first-server|whitelist|scenes|ems|police)))?)/$ en/$1.html [L]
 
 # Serve named HTML files behind clean public addresses (internal, no redirect).
-RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny)))?)/$ $1.html [L]
+RewriteRule ^(rp(?:/(?:pojmy|ic-ooc|lore-postavy|tvorba-postavy|navody/(?:prvy-server|whitelist|sceny|ems|policia)))?)/$ $1.html [L]
 </IfModule>
 <IfModule mod_headers.c>
 Header set Link "<https://gta6rp.sk/llms.txt>; rel=\"describedby\""
