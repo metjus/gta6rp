@@ -23,6 +23,8 @@ Dielňa postáv ukladá koncept len v prehliadači návštevníka a umožňuje s
 - [Prvý RP server](https://gta6rp.sk/rp/navody/prvy-server/): Príprava na vstup do RP komunity.
 - [Whitelist](https://gta6rp.sk/rp/navody/whitelist/): Príprava na prijímací proces komunity.
 - [Spoločné RP scény](https://gta6rp.sk/rp/navody/sceny/): Priestor pre ostatných hráčov a spoločné rozvíjanie príbehu.
+- [EMS v RP](https://gta6rp.sk/rp/navody/ems/): Hranie zranení, triáž, ošetrenie cez /me a /do a prevoz do nemocnice.
+- [Policajné zadržanie v RP](https://gta6rp.sk/rp/navody/policia/): Zastavenie vozidla, putá, práva, prehliadka, výsluch a následky.
 
 ## Blog
 
@@ -56,6 +58,8 @@ The website is available in Slovak and English. English pages have their own can
 - [First RP server](https://gta6rp.sk/en/rp/guides/first-server/): Choosing a community.
 - [Whitelist](https://gta6rp.sk/en/rp/guides/whitelist/): Preparing an application or interview.
 - [Shared scenes](https://gta6rp.sk/en/rp/guides/scenes/): Collaborative storytelling.
+- [EMS in RP](https://gta6rp.sk/en/rp/guides/ems/): Playing injuries, triage, treatment and hospital transport.
+- [Police arrests in RP](https://gta6rp.sk/en/rp/guides/police/): Traffic stops, cuffs, rights, searches and interrogation.
 
 ## English blog
 
