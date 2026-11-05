@@ -3,6 +3,43 @@
 
 POSTS = [
 {
+"date": "2026-11-05",
+"sk": {
+"slug": "zlocinecka-postava-v-rp",
+"cat": "Roleplay",
+"title": "Zločinec v RP: ako hrať kriminálnika, s ktorým je radosť hrať",
+"desc": "Lúpeže, gangy a naháňačky s políciou. Ako hrať zločineckú postavu v GTA roleplayi tak, aby z nej mali zážitok aj obete, policajti a záchranári.",
+"lead": "Prvý trailer GTA VI sa začína v cele a Jason s Luciou zjavne nejdú žiť podľa zákona. Zločinecké postavy budú v Leonide populárne. Tu je návod, ako z nich urobiť príbeh, nie problém.",
+"body": """
+<section><h2>Zločin je scéna, nie cieľ</h2><p>Lúpež, krádež auta či obchod v tmavej uličke sú v RP len kulisa. Podstatné je, čo sa pri nich stane medzi postavami: nervózny pokladník, policajt, ktorý ťa spozná, parťák, ktorý spanikári. Ak ti ide hlavne o peniaze a výbavu, hráš skôr deathmatch s kostýmom. Skús si pred akciou položiť otázku: aký príbeh si z toho odnesú ostatní?</p></section>
+<section><h2>Daj postave dôvod</h2><p>Nikto sa nezobudí ako „gangster“. Dlhy, rodina, pomsta, chudoba, adrenalín alebo zlé kamarátstvo sú dôvody, ktoré sa dajú hrať celé mesiace. Postava s motiváciou sa rozhoduje zaujímavejšie a vie aj zaváhať. Námety nájdeš v článku <a href="/blog/napady-na-rp-postavu-leonida/">7 nápadov na RP postavu</a> a v <a href="/rp/tvorba-postavy/">dielni postáv</a>.</p></section>
+<section><h2>Váž si svoj život</h2><p>Keď na teba mieria tri zbrane, tvoja postava nevyťahuje pištoľ, akoby nič. Strach o život (na serveroch sa mu hovorí Fear RP alebo value of life) robí z prepadnutia napätú scénu, nie prestrelku na tri sekundy. Platí to aj opačne: ak držíš rukojemníka, hraj s ním, vyjednávaj a nechaj ho reagovať.</p></section>
+<section><h2>Násilie až ako posledná možnosť</h2><p>Útok bez RP dôvodu je RDM a takmer všade za to letí ban. Aj pri oprávnenom konflikte najprv hovor, vyhrážaj sa, vyjednávaj. Výstrel ukončí scénu, slová ju naťahujú. Presné definície nájdeš v <a href="/rp/pojmy/">RP slovníku</a>.</p></section>
+<section><h2>Polícia je spoluhráč, nie nepriateľ</h2><p>Bez policajtov by zločin nemal žiadnu váhu. Keď ťa zastavia, hraj to: klam, vyjednávaj, uteč, ale neodpájaj sa uprostred naháňačky a pri prehliadke píš cez /do pravdu. Ako vyzerá zadržanie z oboch strán, rozoberáme v <a href="/rp/navody/policia/">návode na policajné zadržanie</a>. Ak to skončí zranením, daj priestor aj záchranárom, pozri <a href="/rp/navody/ems/">EMS v RP</a>.</p></section>
+<section><h2>Prijmi prehru</h2><p>Najlepšie zločinecké príbehy nie sú o dokonalej lúpeži, ale o tej, ktorá sa pokazila. Zatknutie, stratená korisť či zrada parťáka otvárajú nové scény: výsluch, väzenie, pomstu. Postava, ktorá nikdy neprehrá, nemá čo rozprávať.</p></section>
+<section><h2>Nehraj na úkor iných</h2><p>Okrádať nováčika, ktorý je na serveri prvý deň, alebo opakovane terorizovať tých istých hráčov nie je RP, ale otravovanie. Vyber si ciele s rozumom, nechaj obetiam priestor hrať a ak scéna niekomu OOC vadí, prebrať sa to dá po nej. Základy férovej hry sú v <a href="/rp/navody/sceny/">návode na scény</a>.</p></section>
+<div class="fact-box"><p><strong>Dobré vedieť:</strong> Servery majú vlastné pravidlá pre lúpeže, napríklad minimálny počet policajtov v službe, limity pre gangy či zakázané miesta. Pred prvou akciou si ich vždy prečítaj. Rozdiel medzi tým, čo vie postava a čo hráč, vysvetľuje <a href="/rp/ic-ooc/">IC vs. OOC</a>.</p></div>
+""",
+},
+"en": {
+"slug": "criminal-character-rp",
+"cat": "Roleplay",
+"title": "Criminals in RP: how to play a crook people enjoy playing with",
+"desc": "Robberies, gangs and police chases. How to play a criminal character in GTA roleplay so that victims, cops and medics enjoy the scene too.",
+"lead": "GTA VI's first trailer opens in a prison cell, and Jason and Lucia clearly aren't planning to live by the law. Criminal characters will be popular in Leonida. Here's how to make them a story, not a problem.",
+"body": """
+<section><h2>The crime is the scene, not the goal</h2><p>A robbery, a stolen car or a deal in a dark alley is only the backdrop in RP. What matters is what happens between the characters: the nervous cashier, the cop who recognises you, the partner who panics. If you're mostly after money and gear, you're playing deathmatch in a costume. Before any job, ask yourself: what story will everyone else take away from this?</p></section>
+<section><h2>Give your character a reason</h2><p>Nobody wakes up as a "gangster". Debt, family, revenge, poverty, the adrenaline or the wrong friends are motives you can play for months. A character with a motive makes more interesting choices and can hesitate. You'll find ideas in <a href="/en/blog/rp-character-ideas-leonida/">7 RP character ideas</a> and in the <a href="/en/rp/character-builder/">character builder</a>.</p></section>
+<section><h2>Value your life</h2><p>When three guns are pointed at you, your character doesn't casually pull a pistol. Fear for your life (servers call it Fear RP or value of life) turns a stick-up into a tense scene instead of a three-second shootout. It works the other way too: if you're holding a hostage, play with them, negotiate and let them react.</p></section>
+<section><h2>Violence as a last resort</h2><p>Attacking someone without an RP reason is RDM, and it gets you banned almost everywhere. Even in a justified conflict, talk first: threaten, bargain, negotiate. A gunshot ends a scene, words keep it going. You'll find exact definitions in the <a href="/en/rp/glossary/">RP glossary</a>.</p></section>
+<section><h2>The police are your fellow players, not your enemy</h2><p>Without cops, crime would carry no weight. When you get pulled over, play it: lie, bargain, run, but don't log off mid-chase, and tell the truth with /do during a search. We cover an arrest from both sides in the <a href="/en/rp/guides/police/">police arrest guide</a>. If it ends with injuries, give the medics room to play too, see <a href="/en/rp/guides/ems/">EMS in RP</a>.</p></section>
+<section><h2>Accept losing</h2><p>The best crime stories aren't about the perfect heist, but the one that went wrong. An arrest, lost loot or a partner's betrayal open up new scenes: an interrogation, prison, revenge. A character who never loses has nothing to tell.</p></section>
+<section><h2>Don't play at others' expense</h2><p>Robbing a newcomer on their first day, or terrorising the same players again and again, isn't RP, it's harassment. Pick your targets sensibly, give your victims room to play, and if a scene bothers someone OOC, talk it through afterwards. The basics of fair play are in the <a href="/en/rp/guides/scenes/">scenes guide</a>.</p></section>
+<div class="fact-box"><p><strong>Good to know:</strong> Servers have their own rules for robberies, such as a minimum number of police on duty, gang limits or off-limits locations. Always read them before your first job. The difference between what your character knows and what you know is explained in <a href="/en/rp/ic-ooc/">IC vs. OOC</a>.</p></div>
+""",
+},
+},
+{
 "date": "2026-10-28",
 "sk": {
 "slug": "chyby-novych-rp-hracov",
