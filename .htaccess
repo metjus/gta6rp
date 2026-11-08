@@ -1,6 +1,7 @@
 DirectoryIndex index.html
 Options -Indexes
 ErrorDocument 404 /404.html
+ErrorDocument 410 /404.html
 # Repository files that are not part of the website.
 RedirectMatch 404 ^/(?:zdroj(?:/|$)|README\.md$|\.git)
 <IfModule mod_rewrite.c>
@@ -50,6 +51,9 @@ RewriteCond %{HTTP:CF-IPCountry} ^$
 RewriteCond %{HTTP:Accept-Language} ^[a-z]
 RewriteCond %{HTTP:Accept-Language} !^(?:sk|cs)\b [NC]
 RewriteRule ^$ https://gta6rp.sk/en/ [R=302,L]
+
+# Removed blog posts: 410 Gone tells search engines to drop them for good.
+RewriteRule ^(?:en/)?blog/(?:gta-6-radio-stanice|gta-6-radio-stations)(?:/|\.html)?$ - [G,L]
 
 # Blog (SK /blog/, EN /en/blog/): clean addresses with a trailing slash.
 RewriteCond %{THE_REQUEST} \s/+(?:en/)?blog(?:/index)?\.html(?:[?\s]) [NC]
