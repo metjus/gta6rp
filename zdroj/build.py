@@ -101,7 +101,8 @@ def parts(lang):
     t = read(L[lang]["tpl"])
     head = t[:t.index("<title>")].replace("</style>", BLOG_CSS + "</style>", 1)
     script = re.search(r'<script defer src="/assets/core\.js[^"]*"></script>', t).group(0)
-    header = add_links(t[t.index('<header'):t.index('</header>') + 9], lang)
+    start = t.find('<a class="launch-bar"')  # launch bar (zdroj/launch.py) sits right above the header
+    header = add_links(t[start if start >= 0 else t.index('<header'):t.index('</header>') + 9], lang)
     footer = add_links(t[t.index('<footer'):], lang)
     return head, script, header, footer
 
