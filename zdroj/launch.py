@@ -100,14 +100,14 @@ def panel(lang):
         return ('<section class="departure launch-panel" id="vydanie" aria-labelledby="launch-title"><div class="departure-title">'
                 '<span class="eyebrow">VYDANÉ 19. 11. 2026</span><h2 id="launch-title">VICE CITY</h2><span>GTA VI / HRA JE VONKU</span></div>'
                 '<div class="launch-day"><div class="launch-day-num"><small>DEŇ</small><strong data-launch-day>01</strong></div>'
-                '<div class="launch-day-copy"><span class="eyebrow">TVOJE DNI V LEONIDE</span><p>Toľko dní je GTA VI vonku. Ideálny čas dať postave meno a príbeh.</p>'
+                '<div class="launch-day-copy"><span class="eyebrow">TVOJE DNI V LEONIDE</span><p>Toľko dní je GTA VI vonku, zatiaľ ako hra pre jedného hráča. RP príde s online režimom, dovtedy priprav postave meno a príbeh.</p>'
                 '<ul class="launch-platforms" aria-label="Platformy"><li>PlayStation 5</li><li>Xbox Series X</li><li>Xbox Series S</li></ul></div></div>'
                 '<a href="https://www.rockstargames.com/VI" target="_blank" rel="noopener noreferrer" class="departure-link">Oficiálne info<br>&amp; trailery '
                 + ARROW.format(22) + '</a>' + DAY_JS + '</section>')
     return ('<section class="departure launch-panel" id="release" aria-labelledby="launch-title"><div class="departure-title">'
             '<span class="eyebrow">RELEASED 19 NOV 2026</span><h2 id="launch-title">VICE CITY</h2><span>GTA VI / OUT NOW</span></div>'
             '<div class="launch-day"><div class="launch-day-num"><small>DAY</small><strong data-launch-day>01</strong></div>'
-            '<div class="launch-day-copy"><span class="eyebrow">YOUR DAYS IN LEONIDA</span><p>That\'s how long GTA VI has been out. A good time to give your character a name and a story.</p>'
+            '<div class="launch-day-copy"><span class="eyebrow">YOUR DAYS IN LEONIDA</span><p>That\'s how long GTA VI has been out, so far as a single-player game. RP arrives with the online mode; until then, give your character a name and a story.</p>'
             '<ul class="launch-platforms" aria-label="Platforms"><li>PlayStation 5</li><li>Xbox Series X</li><li>Xbox Series S</li></ul></div></div>'
             '<a href="https://www.rockstargames.com/VI" target="_blank" rel="noopener noreferrer" class="departure-link">Official news<br>&amp; trailers '
             + ARROW.format(22) + '</a>' + DAY_JS + '</section>')
@@ -148,10 +148,11 @@ HOME = {
         ('Čo nájdem na GTA6RP.sk už teraz?', 'Čo nájdem na GTA6RP.sk?'),
         ('Môžem sa tu už pripojiť na GTA 6 RP server?', 'Hra je vonku. Môžem už hrať GTA 6 RP?'),
         ('<p>Nie. GTA6RP.sk je momentálne informačný web a miesto na prípravu vlastných RP príbehov. Neposkytujeme pripojenie na GTA VI RP server. Vydanie hry samo osebe neznamená dostupnosť komunitných RP serverov.</p>',
-         '<p>GTA6RP.sk je informačný web a miesto na prípravu vlastných RP príbehov, pripojenie na GTA VI RP server neposkytujeme. Vydanie hry samo osebe neznamená dostupnosť komunitných RP serverov. Keď bude o RP v GTA VI niečo oficiálne, nájdeš to tu aj na <a href="/blog/">blogu</a>.</p>'),
+         '<p>Zatiaľ nie. GTA VI vyšlo ako hra pre jedného hráča a RP bude možné až vtedy, keď vyjde online režim, teda nový GTA Online alebo ako sa bude volať. Rockstar Games ho zatiaľ neoznámil. GTA6RP.sk je informačný web a miesto na prípravu vlastných RP príbehov, pripojenie na RP server neposkytujeme. Keď bude o online režime niečo oficiálne, nájdeš to tu aj na <a href="/blog/">blogu</a>.</p>'),
         ('Čo pribudne po vydaní hry?', 'Čo pribudne teraz, keď je hra vonku?'),
         ('<p>Viac obsahu pripravíme po vydaní hry: konkrétne tipy, sprievodcovia a informácie založené na tom, čo hra skutočne ponúkne.',
          '<p>Postupne pridáme konkrétne tipy, sprievodcov a informácie založené na tom, čo hra skutočne ponúka.'),
+        ('<span class="phase">KEĎ BUDE RP DOSTUPNÉ</span>', '<span class="phase">KEĎ VYJDE ONLINE REŽIM</span>'),
         ('<h2>Zapamätaj si adresu.<br>Zvyšok príbehu napíšeš ty.</h2>', '<h2>Leonida je otvorená.<br>Zvyšok príbehu napíšeš ty.</h2>'),
     ],
     "en/home.html": [
@@ -181,10 +182,11 @@ HOME = {
         ('What can I find on GTA6RP.sk right now?', 'What can I find on GTA6RP.sk?'),
         ('Can I join a GTA 6 RP server here already?', 'The game is out. Can I play GTA 6 RP yet?'),
         ("<p>No. GTA6RP.sk currently provides information and a space to prepare your RP stories. We don't offer a connection to a GTA VI RP server. The game's release alone does not mean community RP servers will be available.</p>",
-         "<p>GTA6RP.sk provides information and a space to prepare your RP stories; we don't offer a connection to a GTA VI RP server. The game's release alone does not mean community RP servers are available. When there is official news about RP in GTA VI, you'll find it here and on the <a href=\"/en/blog/\">blog</a>.</p>"),
+         "<p>Not yet. GTA VI launched as a single-player game, and RP will only be possible once its online mode is out: a new GTA Online, or whatever it ends up being called. Rockstar Games hasn't announced it yet. GTA6RP.sk provides information and a space to prepare your RP stories; we don't offer a connection to an RP server. When there is official news about the online mode, you'll find it here and on the <a href=\"/en/blog/\">blog</a>.</p>"),
         ('What will be added after the game releases?', 'What gets added now that the game is out?'),
         ("<p>We'll add practical tips, guides and information based on what the released game actually offers.",
          "<p>We're adding practical tips, guides and information based on what the game actually offers."),
+        ('<span class="phase">WHEN RP BECOMES AVAILABLE</span>', '<span class="phase">WHEN THE ONLINE MODE LAUNCHES</span>'),
         ('<h2>Remember the address.<br>The rest of the story is yours.</h2>', '<h2>Leonida is open.<br>The rest of the story is yours.</h2>'),
     ],
 }
