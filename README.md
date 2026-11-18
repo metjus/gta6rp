@@ -12,3 +12,6 @@ Koreň repozitára = koreň webu. Hostcreators pri každom pushnutí do `main` n
 3. Commit a push do `main`.
 
 Súbory v `assets/` sa cachujú rok. Pri zmene súboru zmeň jeho meno alebo `?v=` v HTML.
+
+## Launch dizajn (vydanie GTA VI)
+`python3 -I zdroj/launch.py .` prepne web na launch verziu (lišta „GTA VI je vonku“, panel s počítadlom dní namiesto odpočtu, texty na úvodnej stránke, päta). Spúšťa sa pred `zdroj/build.py`, blog si hlavičku a pätu berie zo šablóny.

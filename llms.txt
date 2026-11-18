@@ -11,7 +11,7 @@ Dielňa postáv ukladá koncept len v prehliadači návštevníka a umožňuje s
 
 ## Hra a roleplay
 
-- [GTA 6 a roleplay po slovensky](https://gta6rp.sk/): Úvod, informácie o hre, odpočet a plánovaný obsah webu.
+- [GTA 6 a roleplay po slovensky](https://gta6rp.sk/): Úvod, GTA VI je vonku (vydané 19. 11. 2026), informácie o hre a plánovaný obsah webu.
 - [Svet roleplayu](https://gta6rp.sk/rp/): Čo je RP a ako začať.
 - [RP slovník](https://gta6rp.sk/rp/pojmy/): 26 pojmov a príkazov vrátane IC, OOC, /me, /do, /try a /doc.
 - [IC a OOC](https://gta6rp.sk/rp/ic-ooc/): Rozdiel medzi hráčom a postavou, metagaming a praktické príklady.
@@ -48,7 +48,7 @@ Dielňa postáv ukladá koncept len v prehliadači návštevníka a umožňuje s
 
 The website is available in Slovak and English. English pages have their own canonical URLs and reciprocal hreflang links. These guides describe general roleplay principles, not confirmed GTA VI multiplayer features. The server directory is planned, not currently available.
 
-- [English homepage](https://gta6rp.sk/en/): GTA VI information and countdown.
+- [English homepage](https://gta6rp.sk/en/): GTA VI is out (released 19 Nov 2026), game information and roleplay guides.
 - [Roleplay for beginners](https://gta6rp.sk/en/rp/): Getting started with RP.
 - [RP glossary](https://gta6rp.sk/en/rp/glossary/): 26 roleplay terms and commands. Explains metagaming, powergaming, RDM, VDM, Fail RP, Fear RP and NLR with examples.
 - [RP príkazy](https://gta6rp.sk/rp/prikazy/): Použitie /me, /do, /try, /doc a /report, ukážková scéna a časté chyby.
