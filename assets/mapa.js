@@ -1,4 +1,4 @@
-/* Mapa Leonidy (gta6rp.sk/mapa/). Podklad a miesta: GTADB.org a prispievatelia, CC BY 4.0. Leaflet 1.9.4. */
+/* Mapa Leonidy (gta6rp.sk/mapa/). Podklad a miesta 1:1 z GTADB.org (a prispievatelia), CC BY 4.0. Leaflet 1.9.4. */
 (function () {
   "use strict";
   var root = document.querySelector("[data-mg]");
@@ -12,10 +12,11 @@
   function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
   function num(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
 
-  var hidden = new Set(load("hidden", ["ostatne"])), found = new Set(load("found", []));
-  var hideFound = load("hidefound", false) === true, onlyEnter = load("enter", false) === true;
-  var cats = {}; D.cats.forEach(function (c) { cats[c.id] = c; });
-  var items = [], byId = {};
+  var hidden = new Set(load("hidden2", ["oblasti"])), found = new Set(load("found", []));
+  var hideFound = load("hidefound", false) === true;
+  var filter = load("filter", "all"), layerId = load("layer", D.layers[0].id);
+  var typeIds = new Set(D.typeIds), types = {}; D.types.forEach(function (t) { types[t.id] = t; });
+  var items = [], places = [], byId = {}, query = "";
 
   /* --- výška mapy podľa hlavičky --- */
   function fitHeight() { root.style.setProperty("--top", Math.round(root.getBoundingClientRect().top + window.scrollY) + "px"); }
@@ -23,16 +24,26 @@
 
   /* --- mapa: herné súradnice x, y (ako GTADB), zoom 0 = 1024 px na celý svet --- */
   var CRS = L.extend({}, L.CRS.Simple, { transformation: new L.Transformation(1 / 32, 512, -1 / 32, 512) });
-  var B = L.latLngBounds(D.bounds);
+  var WORLD = L.latLngBounds([[-16384, -16384], [16384, 16384]]);
   var map = L.map(root.querySelector(".mg-leaflet"), {
     crs: CRS, minZoom: 0, maxZoom: 7, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 90,
-    zoomControl: false, preferCanvas: true, maxBounds: B.pad(0.15), maxBoundsViscosity: 0.8
+    zoomControl: false, preferCanvas: true, maxBounds: WORLD, maxBoundsViscosity: 0.8
   });
   map.attributionControl.setPrefix(false);
-  L.tileLayer(D.tiles, {
-    bounds: B, minNativeZoom: 0, maxNativeZoom: 5, noWrap: true, keepBuffer: 3,
-    attribution: '<a href="' + D.gtadb + '" target="_blank" rel="noopener">GTADB.org</a> (CC BY 4.0)'
-  }).addTo(map);
+  var ATTR = '<a href="' + D.gtadb + '" target="_blank" rel="noopener">' + esc(T.credit) + "</a> (CC BY 4.0)";
+  var tiles = {};
+  D.layers.forEach(function (l) {
+    tiles[l.id] = L.tileLayer(l.url, { bounds: L.latLngBounds(l.bounds), minNativeZoom: 0, maxNativeZoom: l.maxNative, noWrap: true, keepBuffer: 3, attribution: ATTR });
+  });
+  if (!tiles[layerId]) layerId = D.layers[0].id;
+  function setBg() { D.layers.forEach(function (l) { if (l.id === layerId) map.getContainer().style.background = l.bg; }); }
+  tiles[layerId].addTo(map); setBg();
+  var layerSel = root.querySelector("[data-layer]");
+  layerSel.value = layerId;
+  layerSel.onchange = function () {
+    map.removeLayer(tiles[layerId]); layerId = layerSel.value; tiles[layerId].addTo(map); tiles[layerId].bringToBack(); setBg(); save("layer", layerId);
+  };
+
   L.control.zoom({ position: "topright", zoomInTitle: T.zoomin, zoomOutTitle: T.zoomout }).addTo(map);
   var LAND = L.latLngBounds([[-8300, -10000], [9200, 3400]]);
   var Fit = L.Control.extend({
@@ -49,25 +60,94 @@
   new Fit().addTo(map);
   map.fitBounds(LAND, { animate: false });
 
+  /* --- značka ako na GTADB: kvapka s bielym okrajom vo farbe miesta, špička na presnej polohe --- */
+  var R = 7;
+  L.Canvas.include({
+    _updatePin: function (layer) {
+      if (!this._drawing || layer._empty()) return;
+      var p = layer._point, ctx = this._ctx, r = layer._radius, cy = p.y - r * Math.SQRT2;
+      ctx.beginPath();
+      ctx.arc(p.x, cy, r, Math.PI * 0.75, Math.PI * 2.25);
+      ctx.lineTo(p.x, p.y);
+      ctx.closePath();
+      this._fillStroke(ctx, layer);
+    }
+  });
+  var Pin = L.CircleMarker.extend({
+    _updatePath: function () { this._renderer._updatePin(this); },
+    _updateBounds: function () {
+      var r = this._radius + 3, p = this._point;
+      this._pxBounds = new L.Bounds(p.subtract([r, r * 2.6]), p.add([r, 3]));
+    },
+    _containsPoint: function (q) {
+      var r = this._radius, c = this._point.subtract([0, r * Math.SQRT2]);
+      return q.distanceTo(c) <= r + 3 || (Math.abs(q.x - c.x) <= r * 0.7 && q.y >= c.y && q.y <= this._point.y + 1);
+    }
+  });
+
+  /* --- údaje GTADB, rovnaké pravidlá ako map/index.js --- */
+  function igName(p) { return p.ig.split(", ")[0] || "?"; }
+  function rlAddr(p) { return p.rl.replace(/(?!^)\?$/, ""); }
+  function rlName(p) { return rlAddr(p).split(", ")[0] || "?"; }
+  function visTags(p) { return p.tags.filter(function (t) { return !/^\/\//.test(t) && !/^L\d+$/i.test(t); }); }
+  function typesOf(p) { var t = p.tags.filter(function (x) { return typeIds.has(x); }); return t.length ? t : ["unclassified"]; }
+  function rlStatus(p) { return p.rl === "" || p.rl === "?" ? "unknown" : p.tags.indexOf("unconfirmed") > -1 ? "unconfirmed" : "confirmed"; }
+  var STREET = /\s(?:Ave|Blvd|Ct|Dr|Hwy|Ln|Pkwy|Pl|Rd|St|Way),/;
+  var FILTERS = {
+    all: function () { return true; },
+    igNameConfirmed: function (p) { return !!p.ig && p.ig[0] !== "?" && p.ig.indexOf("?,") < 0 && p.ig[0] !== '"'; },
+    igNameUnconfirmed: function (p) { return p.ig[0] !== "?" && p.ig.indexOf("?,") > -1; },
+    igNameUnknown: function (p) { return p.ig[0] === "?" || p.ig[0] === '"'; },
+    igAddressConfirmed: function (p) { return STREET.test(p.ig); },
+    igAddressUnknown: function (p) { return !STREET.test(p.ig); },
+    igLatLngConfirmed: function (p) { return p.ig.slice(-1) !== "?" && p.ll !== null; },
+    igLatLngUnconfirmed: function (p) { return p.ig.slice(-1) === "?"; },
+    igLatLngUnknown: function (p) { return p.ll === null; },
+    igWithPhoto: function (p) { return p.igV !== null; },
+    igWithoutPhoto: function (p) { return p.igV === null; },
+    igClassified: function (p) { return p.types[0] !== "unclassified"; },
+    igUnclassified: function (p) { return p.types[0] === "unclassified"; },
+    rlLandmarkConfirmed: function (p) { return rlStatus(p) === "confirmed"; },
+    rlLandmarkUnconfirmed: function (p) { return rlStatus(p) === "unconfirmed"; },
+    rlLandmarkUnknown: function (p) { return rlStatus(p) === "unknown"; },
+    rlLatLngMissing: function (p) { return rlAddr(p)[0] !== "?" && !p.rlLL; },
+    rlWithPhoto: function (p) { return p.rlV !== null; },
+    rlWithoutPhoto: function (p) { return p.rlV === null; }
+  };
+  if (!FILTERS[filter]) filter = "all";
+  function matchFind(it) {
+    if (!query) return true;
+    var neg = query[0] === "!", q = neg ? query.slice(1) : query;
+    if (!q) return true;
+    var hit = it.find.indexOf(q) > -1;
+    return neg ? !hit : hit;
+  }
+
   /* --- popup --- */
+  function photo(p, kind, v, alt) {
+    return '<figure class="mg-pop-photo"><img loading="lazy" alt="' + esc(alt) + '" src="' + D.photos + encodeURIComponent(p.id + "," + kind) + ".jpg?v=" + v + '" onerror="this.parentNode.remove()"><figcaption>' + esc(kind === "ig" ? T.photo : T.rlphoto) + " · GTADB.org</figcaption></figure>";
+  }
   function regionHtml(r) {
-    return '<div class="mg-pop"><span class="mg-pop-cat" style="--c:' + cats.oblasti.color + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + cats.oblasti.icon + "</svg>" + esc(cats.oblasti.name) + "</span>" +
+    return '<div class="mg-pop"><span class="mg-pop-cat" style="--c:' + D.regionColor + '">' + esc(T.region) + " · GTA6RP.sk</span>" +
       "<h3>" + esc(r.t) + "</h3><p>" + esc(r.d) + "</p>" +
       '<div class="mg-pop-ideas"><small>' + esc(T.ideas) + "</small><div>" + r.rp.map(function (x) { return "<span>" + esc(x) + "</span>"; }).join("") + "</div></div>" +
       actions(r.id) + "</div>";
   }
   function placeHtml(p) {
-    var c = cats[p.cat], title = p.name || p.rl || p.addr || "?";
-    var meta = "";
-    if (p.enter) meta += '<span class="is-enter">' + esc(T.enterable) + "</span>";
-    if (!p.name) meta += "<span>" + esc(T.nameless) + "</span>";
+    var tg = visTags(p), ra = rlAddr(p);
+    var ty = p.types.map(function (t) { return '<span class="mg-pop-type" style="--c:' + types[t].color + '">' + esc(types[t].name) + "</span>"; }).join("");
+    var gl = D.gtadb + "#VI," + (p.ll ? p.x.toFixed(3) + "," + p.y.toFixed(3) : "0.000,0.000") + ",4.000," + p.id;
     return '<div class="mg-pop">' +
-      (p.photo ? '<figure class="mg-pop-photo"><img loading="lazy" alt="' + esc(T.photo + ": " + title) + '" src="' + D.photos + encodeURIComponent(p.id + ",ig") + ".jpg?v=" + p.photo + '" onerror="this.parentNode.remove()"><figcaption>' + esc(T.photo) + " · GTADB.org</figcaption></figure>" : "") +
-      '<span class="mg-pop-cat" style="--c:' + c.color + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + c.icon + "</svg>" + esc(c.name) + "</span>" +
-      "<h3>" + esc(title) + "</h3>" + (p.addr ? '<p class="mg-pop-addr">' + esc(p.addr) + "</p>" : "") +
-      (p.rl ? '<p class="mg-pop-rl"><small>' + esc(T.real) + "</small>" + esc(p.rl) + "</p>" : "") +
-      (meta ? '<div class="mg-pop-meta">' + meta + "</div>" : "") + actions(p.id) +
-      '<a class="mg-pop-src" href="' + D.gtadb + "#VI," + Math.round(p.x) + "," + Math.round(p.y) + ',5" target="_blank" rel="noopener">GTADB.org ↗</a></div>';
+      (p.igV !== null ? photo(p, "ig", p.igV, T.photo + ": " + igName(p)) : "") +
+      '<div class="mg-pop-types">' + ty + '<span class="mg-pop-id">' + esc(p.id) + "</span></div>" +
+      "<h3>" + esc(igName(p)) + "</h3>" +
+      '<p class="mg-pop-addr">' + esc(p.ig || "?") + "</p>" +
+      (p.ll ? "" : '<p class="mg-pop-nopos">' + esc(T.nopos) + "</p>") +
+      '<div class="mg-pop-rl"><small>' + esc(T.real) + "</small><b>" + esc(rlName(p)) + "</b>" + (ra && ra !== rlName(p) ? "<span>" + esc(ra) + "</span>" : "") + "</div>" +
+      (p.rlV !== null ? photo(p, "rl", p.rlV, T.rlphoto + ": " + rlName(p)) : "") +
+      (tg.length ? '<div class="mg-pop-tags"><small>' + esc(T.tags) + "</small>" + tg.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "") +
+      actions(p.id) +
+      '<a class="mg-pop-src" href="' + gl + '" target="_blank" rel="noopener">GTADB.org ↗</a></div>';
   }
   function actions(id) {
     var f = found.has(id);
@@ -78,8 +158,10 @@
   var current = null;
   function openItem(it, view) {
     current = it;
-    if (view) map.setView(it.ll, Math.max(map.getZoom(), it.region ? 2 : 4), { animate: view === "fly" });
-    popup.setLatLng(it.ll).setContent(it.region ? regionHtml(it) : placeHtml(it)).openOn(map);
+    var ll = it.ll || map.getCenter();
+    if (view && it.ll) map.setView(it.ll, Math.max(map.getZoom(), it.region ? 2 : 4), { animate: view === "fly" });
+    popup.options.offset = it.region || !it.ll ? [0, 7] : [0, -R * 2.4];
+    popup.setLatLng(ll).setContent(it.region ? regionHtml(it) : placeHtml(it)).openOn(map);
     history.replaceState(null, "", "#" + it.id);
     highlight();
   }
@@ -97,105 +179,122 @@
   map.on("popupclose", function () { current = null; highlight(); if (location.hash) history.replaceState(null, "", location.pathname + location.search); });
 
   /* --- vrstvy --- */
-  var groups = {}; D.cats.forEach(function (c) { groups[c.id] = L.layerGroup(); });
-  var ring = L.circleMarker([0, 0], { radius: 12, color: "#fff", weight: 3, fill: false, interactive: false });
-  function radius() { var z = map.getZoom(); return z < 1.5 ? 2.6 : z < 2.5 ? 3.6 : z < 3.5 ? 5 : z < 5 ? 6.5 : 8; }
-  function styleFor(it) {
-    var f = found.has(it.id);
-    return { radius: radius(), color: "#0b0a14", weight: 1.2, fillColor: cats[it.cat].color, fillOpacity: f ? 0.35 : 0.95, opacity: f ? 0.5 : 1 };
+  var pins = L.layerGroup().addTo(map), regions = L.layerGroup();
+  function styleFor(p) {
+    var f = found.has(p.id), sel = current === p;
+    return { radius: R, color: "#fff", weight: sel ? 2.5 : 1, fillColor: p.color, fillOpacity: f ? 0.35 : 1, opacity: f ? 0.55 : 1 };
   }
+  var lastSel = null;
   function highlight() {
-    if (current && !current.region) { ring.setLatLng(current.ll).setRadius(radius() + 5); if (!map.hasLayer(ring)) ring.addTo(map); }
-    else if (map.hasLayer(ring)) ring.remove();
+    var prev = lastSel;
+    lastSel = current && !current.region ? current : null;
+    if (prev && prev.marker) prev.marker.setStyle(styleFor(prev));
+    if (lastSel && lastSel.marker && pins.hasLayer(lastSel.marker)) { lastSel.marker.setStyle(styleFor(lastSel)); lastSel.marker.bringToFront(); }
     D.regions.forEach(function (r) { var el = r.marker.getElement(); if (el) el.classList.toggle("is-active", current === r); });
   }
-  var tip = L.tooltip({ direction: "top", offset: [0, -6], className: "mg-tip", opacity: 1 });
+  var tip = L.tooltip({ direction: "top", offset: [0, -R * 2.8], className: "mg-tip", opacity: 1 });
   function addPlace(p) {
-    var m = L.circleMarker(p.ll, styleFor(p));
+    if (!p.ll) return;
+    var m = new Pin(p.ll, styleFor(p));
     m.on("click", function (e) { L.DomEvent.stop(e); closePanel(); openItem(p); });
-    m.on("mouseover", function () { tip.setLatLng(p.ll).setContent(esc(p.name || p.rl || p.addr || "?")); map.openTooltip(tip); });
+    m.on("mouseover", function () { tip.setLatLng(p.ll).setContent(esc(igName(p)) + "<br><small>" + esc(rlName(p)) + "</small>"); map.openTooltip(tip); });
     m.on("mouseout", function () { map.closeTooltip(tip); });
     p.marker = m;
   }
   D.regions.forEach(function (r) {
-    r.region = true; r.cat = "oblasti"; r.ll = [r.y, r.x]; byId[r.id] = r; items.push(r);
+    r.region = true; r.ll = [r.y, r.x]; byId[r.id] = r; items.push(r);
+    r.find = norm(r.t);
     r.marker = L.marker(r.ll, {
       keyboard: true, title: r.t, riseOnHover: true, zIndexOffset: 1000,
       icon: L.divIcon({ className: "mg-region", iconSize: [0, 0], html: '<div class="mg-region-pin"><span class="mg-region-dot"></span><span class="mg-region-name">' + esc(r.t) + "</span></div>" })
     }).on("click", function () { closePanel(); openItem(r); });
-    groups.oblasti.addLayer(r.marker);
   });
 
   /* --- filtre --- */
-  var catBtns = root.querySelectorAll(".mg-cat");
-  function visible(it) { return !(hideFound && found.has(it.id)) && !(onlyEnter && !it.region && !it.enter); }
+  var catBtns = root.querySelectorAll(".mg-cat"), shownEl = root.querySelector("[data-shown]");
+  var filterSel = root.querySelector("[data-filter]");
+  filterSel.value = filter;
+  function visible(p) {
+    if (hideFound && found.has(p.id)) return false;
+    if (!p.types.some(function (t) { return !hidden.has(t); })) return false;
+    return FILTERS[filter](p) && matchFind(p);
+  }
   function render() {
-    D.cats.forEach(function (c) {
-      var g = groups[c.id], on = !hidden.has(c.id);
-      if (on && !map.hasLayer(g)) g.addTo(map);
-      if (!on && map.hasLayer(g)) g.remove();
+    var n = 0, all = 0;
+    places.forEach(function (p) {
+      var v = visible(p);
+      if (v) all++;
+      if (!p.marker) return;
+      var has = pins.hasLayer(p.marker);
+      if (v) n++;
+      if (v && !has) pins.addLayer(p.marker); else if (!v && has) pins.removeLayer(p.marker);
+      if (v) p.marker.setStyle(styleFor(p));
     });
-    items.forEach(function (it) {
-      var g = groups[it.cat], v = visible(it), has = g.hasLayer(it.marker);
-      if (v && !has) g.addLayer(it.marker); else if (!v && has) g.removeLayer(it.marker);
-      if (!it.region) it.marker.setStyle(styleFor(it));
-      else { var el = it.marker.getElement(); if (el) el.classList.toggle("is-found", found.has(it.id)); }
+    var regOn = !hidden.has("oblasti");
+    if (regOn && !map.hasLayer(regions)) regions.addTo(map);
+    if (!regOn && map.hasLayer(regions)) regions.remove();
+    D.regions.forEach(function (r) {
+      var v = !(hideFound && found.has(r.id)) && matchFind(r), has = regions.hasLayer(r.marker);
+      if (v && !has) regions.addLayer(r.marker); else if (!v && has) regions.removeLayer(r.marker);
+      var el = r.marker.getElement(); if (el) el.classList.toggle("is-found", found.has(r.id));
     });
     catBtns.forEach(function (b) { b.setAttribute("aria-pressed", String(!hidden.has(b.dataset.cat))); });
-    var n = 0; found.forEach(function (id) { if (byId[id]) n++; });
-    root.querySelector("[data-found]").textContent = num(n);
-    root.querySelector("[data-bar]").style.width = (n / Math.max(items.length, 1) * 100) + "%";
+    if (shownEl && places.length) shownEl.textContent = num(all) + " " + T.shown + (all !== n ? " · " + num(n) + " " + T.onmap : "");
+    var f = 0; found.forEach(function (id) { if (byId[id]) f++; });
+    root.querySelector("[data-found]").textContent = num(f);
+    root.querySelector("[data-bar]").style.width = (f / Math.max(places.length, 1) * 100) + "%";
     root.querySelector("[data-hidefound]").checked = hideFound;
-    root.querySelector("[data-enter]").checked = onlyEnter;
     highlight();
   }
-  map.on("zoomend", function () { var r = radius(); items.forEach(function (it) { if (!it.region) it.marker.setRadius(r); }); highlight(); map.getContainer().classList.toggle("mg-far", map.getZoom() < 1.5); });
   catBtns.forEach(function (b) {
     b.addEventListener("click", function () {
       var c = b.dataset.cat; hidden.has(c) ? hidden.delete(c) : hidden.add(c);
-      save("hidden", Array.from(hidden)); render();
+      save("hidden2", Array.from(hidden)); render();
     });
   });
-  root.querySelector("[data-all]").onclick = function () { hidden.clear(); save("hidden", []); render(); };
-  root.querySelector("[data-none]").onclick = function () { D.cats.forEach(function (c) { hidden.add(c.id); }); save("hidden", Array.from(hidden)); map.closePopup(); render(); };
+  root.querySelector("[data-all]").onclick = function () { D.types.forEach(function (t) { hidden.delete(t.id); }); filter = "all"; filterSel.value = "all"; save("filter", filter); save("hidden2", Array.from(hidden)); render(); };
+  root.querySelector("[data-none]").onclick = function () { D.types.forEach(function (t) { hidden.add(t.id); }); hidden.add("oblasti"); save("hidden2", Array.from(hidden)); map.closePopup(); render(); };
+  filterSel.onchange = function () { filter = filterSel.value; save("filter", filter); render(); };
   root.querySelector("[data-hidefound]").onchange = function (e) { hideFound = e.target.checked; save("hidefound", hideFound); render(); };
-  root.querySelector("[data-enter]").onchange = function (e) { onlyEnter = e.target.checked; save("enter", onlyEnter); render(); };
   root.querySelector("[data-reset]").onclick = function () { found.clear(); save("found", []); render(); };
   function toggleFound(id) { found.has(id) ? found.delete(id) : found.add(id); save("found", Array.from(found)); render(); }
 
   function reveal(id) {
     var it = byId[id]; if (!it) return;
-    if (hidden.has(it.cat)) { hidden.delete(it.cat); save("hidden", Array.from(hidden)); }
+    if (it.region) hidden.delete("oblasti");
+    else {
+      if (!it.types.some(function (t) { return !hidden.has(t); })) hidden.delete(it.types[0]);
+      if (!FILTERS[filter](it)) { filter = "all"; filterSel.value = "all"; save("filter", filter); }
+    }
+    save("hidden2", Array.from(hidden));
     if (hideFound && found.has(id)) { hideFound = false; save("hidefound", false); }
-    if (onlyEnter && !it.region && !it.enter) { onlyEnter = false; save("enter", false); }
     render(); closePanel(); openItem(it, "fly");
   }
 
-  /* --- vyhľadávanie --- */
-  var input = root.querySelector(".mg-search input"), list = root.querySelector(".mg-results"), sel = -1, hits = [];
+  /* --- vyhľadávanie ako „Find“ na GTADB: id, adresy aj tagy, „!“ na začiatku = neobsahuje; filtruje aj body na mape --- */
+  var input = root.querySelector(".mg-search input"), list = root.querySelector(".mg-results"), sel = -1, hits = [], tmr = 0;
   function search() {
-    var q = norm(input.value.trim());
-    if (q.length < 2) { list.hidden = true; list.innerHTML = ""; return; }
+    var raw = input.value.trim();
+    query = norm(raw);
+    clearTimeout(tmr); tmr = setTimeout(render, 120);
+    if (raw.length < 2 || query[0] === "!") { list.hidden = true; list.innerHTML = ""; return; }
     hits = [];
-    for (var i = 0; i < items.length && hits.length < 60; i++) {
-      var it = items[i], s = it.find || (it.find = norm([it.t || it.name, it.rl, it.addr].join(" ")));
-      if (s.indexOf(q) > -1) hits.push(it);
-    }
-    hits.sort(function (a, b) {
-      var an = norm(a.t || a.name || ""), bn = norm(b.t || b.name || "");
-      return (b.region ? 2 : 0) - (a.region ? 2 : 0) || (an.indexOf(q) === 0 ? -1 : an.indexOf(q) > -1 ? 0 : 1) - (bn.indexOf(q) === 0 ? -1 : bn.indexOf(q) > -1 ? 0 : 1);
-    });
+    for (var i = 0; i < items.length; i++) if (items[i].find.indexOf(query) > -1) hits.push(items[i]);
+    function rank(it) { var n = norm(it.region ? it.t : igName(it)); return it.region ? -1 : n.indexOf(query) === 0 ? 0 : n.indexOf(query) > -1 ? 1 : 2; }
+    hits.sort(function (a, b) { return rank(a) - rank(b); });
+    var total = hits.length;
     hits = hits.slice(0, 15); sel = -1;
     list.innerHTML = hits.length ? hits.map(function (it, i) {
-      var c = cats[it.cat], title = it.t || it.name || it.rl || it.addr;
-      var sub = it.region ? c.name : c.name + (it.addr ? " · " + it.addr : "");
-      return '<li role="option" id="mg-r' + i + '"><button type="button" tabindex="-1" data-id="' + it.id + '"><span class="mg-ico" style="--c:' + c.color + '"><svg viewBox="0 0 24 24">' + c.icon + "</svg></span><span>" + esc(title) + "<small>" + esc(sub) + "</small></span></button></li>";
-    }).join("") : '<li class="mg-empty">' + esc(T.noresults) + "</li>";
+      var title = it.region ? it.t : igName(it) + " · " + rlName(it);
+      var sub = it.region ? T.region + " · GTA6RP.sk" : (it.ig || "?") + (it.ll ? "" : " · " + T.nopos);
+      var col = it.region ? D.regionColor : it.color;
+      return '<li role="option" id="mg-r' + i + '"><button type="button" tabindex="-1" data-id="' + esc(it.id) + '"><span class="mg-ico" style="--c:' + col + '"></span><span>' + esc(title) + "<small>" + esc(sub) + "</small></span></button></li>";
+    }).join("") + (total > 15 ? '<li class="mg-empty">+ ' + num(total - 15) + " " + esc(T.more) + "</li>" : "") : '<li class="mg-empty">' + esc(T.noresults) + "</li>";
     list.hidden = false;
   }
   function pick(id) { list.hidden = true; input.blur(); reveal(id); }
   input.addEventListener("input", search);
-  input.addEventListener("focus", search);
+  input.addEventListener("focus", function () { if (input.value.trim().length > 1) search(); });
   input.addEventListener("keydown", function (e) {
     var lis = list.querySelectorAll("li[role=option]");
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
@@ -204,7 +303,7 @@
       lis.forEach(function (li, i) { li.setAttribute("aria-selected", String(i === sel)); });
       input.setAttribute("aria-activedescendant", "mg-r" + sel);
     } else if (e.key === "Enter") {
-      e.preventDefault(); var h = hits[sel > -1 ? sel : 0]; if (h) pick(h.id);
+      e.preventDefault(); var h = hits[sel > -1 ? sel : 0]; if (h && !list.hidden) pick(h.id);
     } else if (e.key === "Escape") { list.hidden = true; }
   });
   list.addEventListener("mousedown", function (e) { var b = e.target.closest("button[data-id]"); if (b) { e.preventDefault(); pick(b.dataset.id); } });
@@ -219,10 +318,9 @@
 
   /* --- súradnice --- */
   var hud = root.querySelector("[data-coords]");
-  function setHud(p) { hud.textContent = "X " + Math.round(p.lng) + " · Y " + Math.round(p.lat); }
+  function setHud(p) { hud.textContent = "X " + p.lng.toFixed(1) + " · Y " + p.lat.toFixed(1); }
   map.on("mousemove", function (e) { setHud(e.latlng); });
   setHud(map.getCenter());
-  map.on("moveend", function () { if (!matchMedia("(hover:hover)").matches) setHud(map.getCenter()); });
 
   window.addEventListener("resize", function () { fitHeight(); map.invalidateSize(); });
   window.addEventListener("hashchange", function () { var h = decodeURIComponent(location.hash.slice(1)); if (byId[h]) reveal(h); });
@@ -232,12 +330,16 @@
   var loading = root.querySelector("[data-loading]");
   fetch(D.places).then(function (r) { return r.json(); }).then(function (rows) {
     rows.forEach(function (r) {
-      var p = { id: r[0], name: r[1], addr: r[2], cat: cats[r[3]] ? r[3] : "ostatne", x: r[4], y: r[5], rl: r[6], photo: r[7], enter: r[8] === 1 };
-      p.ll = [p.y, p.x]; addPlace(p); items.push(p); byId[p.id] = p;
+      var p = { id: r[0], ig: r[1], x: r[2], y: r[3], rl: r[4], tags: r[5], igV: r[6], rlV: r[7], rlLL: r[8] === 1, color: "#" + r[9] };
+      p.ll = p.x === null ? null : [p.y, p.x];
+      p.types = typesOf(p);
+      p.find = norm(p.id + "\n" + p.ig + "\n" + p.rl + "\n" + p.tags.join("\n"));
+      addPlace(p); items.push(p); places.push(p); byId[p.id] = p;
     });
     render();
     loading.hidden = true;
+    root.dataset.ready = "1";
     var h = decodeURIComponent(location.hash.slice(1));
-    if (byId[h]) { var it = byId[h]; map.setView(it.ll, it.region ? 2 : 4, { animate: false }); openItem(it); }
+    if (byId[h]) { var it = byId[h]; if (it.ll) map.setView(it.ll, it.region ? 2 : 4, { animate: false }); openItem(it); }
   }).catch(function () { loading.hidden = true; });
 })();

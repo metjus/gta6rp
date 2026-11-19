@@ -86,7 +86,7 @@
 .mg-pop{padding:16px 18px 16px}
 .mg-pop-cat{display:inline-flex;align-items:center;gap:7px;color:var(--c);font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase}
 .mg-pop-cat svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.mg-pop h3{margin:6px 30px 6px 0;font:600 24px/1.1 Oswald,Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.mg-pop h3{margin:6px 30px 6px 0;font:600 23px/1.15 Oswald,Arial,sans-serif;letter-spacing:.3px}
 .mg-pop p{margin:0 0 10px;color:#d9c8e6}
 .mg-pop-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .mg-pop-meta span{padding:2px 9px;border-radius:20px;background:#0f0b19;color:#bfb0cc;font-size:11px;font-weight:600}
@@ -134,3 +134,30 @@
 .mg-pop-src:hover{color:#ff9ad0!important}
 .mg-region-name{font-size:15px}
 @media (max-width:900px){.mg-hud{display:none}}
+/* 1:1 GTADB: výber podkladu a filtra, typy, popup */
+.mg-selects{display:grid;gap:8px;margin-bottom:14px}
+.mg-selects label{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:10px;color:#9c8bb0;font:800 10px Manrope,Arial,sans-serif;letter-spacing:1.4px;text-transform:uppercase}
+.mg-selects select{width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #3b2d52;border-radius:8px;background:#1a1528 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f38bbe' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center/14px;color:#faf2f9;font:700 12.5px Manrope,Arial,sans-serif;letter-spacing:0;text-transform:none;appearance:none;cursor:pointer}
+.mg-selects select:focus-visible{outline:2px solid #f38bbe;outline-offset:1px}
+.mg-group h2 small{float:right;color:#f38bbe;font-size:10px;letter-spacing:1px}
+.mg-cats-2{grid-template-columns:1fr 1fr}
+.mg-cats-2 .mg-cat{gap:8px;padding:7px 8px;font-size:12px}
+.mg-cats-2 .mg-cat-n{min-width:0;padding:1px 6px;font-size:10.5px}
+.mg-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px #0f0b19,0 0 0 3px #ffffff40}
+.mg-results .mg-ico{flex:none;width:12px;height:12px;border-radius:7px 7px 0 7px;transform:rotate(45deg);background:var(--c);border:1px solid #fff}
+.mg-pop-types{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:2px}
+.mg-pop-type{padding:1px 8px;border-radius:20px;background:color-mix(in srgb,var(--c) 26%,#0f0b19);border:1px solid color-mix(in srgb,var(--c) 60%,transparent);color:#faf2f9;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.mg-pop-id{margin-left:auto;margin-right:26px;color:#8f82a0;font:600 10.5px ui-monospace,Menlo,monospace}
+.mg-pop-nopos{padding:4px 9px;border-radius:7px;background:#ff965d22;color:#ffc7a8!important;font-size:12px;font-weight:700}
+.mg-pop-rl{margin-bottom:10px}
+.mg-pop-rl b{display:block;font-size:13px}
+.mg-pop-rl span{display:block;color:#bfb0cc;font-size:12px}
+.mg-pop-rl + .mg-pop-photo{margin:0 0 12px;border-radius:10px}
+.mg-pop-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.mg-pop-tags small{flex-basis:100%;color:#9c8bb0;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+.mg-pop-tags span{padding:1px 8px;border:1px solid #3b2d52;border-radius:20px;color:#d9c8e6;font-size:11px;font-weight:600}
+.mg .leaflet-popup-content{max-height:min(70vh,560px);overflow:auto;scrollbar-width:thin}
+.mg-tip small{color:#bfb0cc;font-weight:600}
+.mg-cats-2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.mg-cats-2 .mg-cat{min-width:0}
+.mg-cats-2 .mg-cat-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
