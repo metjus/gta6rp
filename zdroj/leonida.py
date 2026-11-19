@@ -62,6 +62,8 @@ TYPES = [
     ("unclassified", "#ff4fa3", "Nezaradené", "Unclassified"),
 ]
 TYPE_IDS = [t[0] for t in TYPES[:-1]]
+# Jednotné číslo do nadpisu miesta, ktoré ešte nemá názov z hry (namiesto „?“).
+ONE = {'agriculture': ('Farma', 'Farm'), 'construction': ('Stavenisko', 'Construction site'), 'government': ('Úrad', 'Government building'), 'hotel': ('Hotel', 'Hotel'), 'industrial': ('Priemyselný areál', 'Industrial site'), 'landmark': ('Pamätihodnosť', 'Landmark'), 'leisure': ('Miesto na voľný čas', 'Leisure spot'), 'mixed': ('Budova', 'Building'), 'natural': ('Prírodné miesto', 'Natural spot'), 'office': ('Kancelárska budova', 'Office building'), 'other': ('Miesto', 'Place'), 'public': ('Verejná budova', 'Public building'), 'residential': ('Obytný dom', 'Residential building'), 'restaurant': ('Reštaurácia', 'Restaurant'), 'retail': ('Obchod', 'Shop'), 'transportation': ('Dopravný objekt', 'Transport site'), 'utilities': ('Technický objekt', 'Utility site'), 'unclassified': ('Miesto', 'Place')}
 # GTADB filtre (map/index.js filterOptions), preložené.
 FILTERS = [
     ("all", "všetky", "all"),
@@ -77,12 +79,6 @@ FILTERS = [
     ("igWithoutPhoto", "bez záberu z hry", "without IG photo"),
     ("igClassified", "so zaradením", "IG classified"),
     ("igUnclassified", "bez zaradenia", "IG unclassified"),
-    ("rlLandmarkConfirmed", "skutočné miesto potvrdené", "RL landmark confirmed"),
-    ("rlLandmarkUnconfirmed", "skutočné miesto nepotvrdené", "RL landmark unconfirmed"),
-    ("rlLandmarkUnknown", "skutočné miesto neznáme", "RL landmark unknown"),
-    ("rlLatLngMissing", "chýba skutočná poloha", "RL latlng missing"),
-    ("rlWithPhoto", "so skutočnou fotkou", "with RL photo"),
-    ("rlWithoutPhoto", "bez skutočnej fotky", "without RL photo"),
 ]
 REGION_COLOR = "#ff5fa2"
 
@@ -150,10 +146,10 @@ UI = {
         "search": "Hľadať miesto, postavu…", "noresults": "Nič sme nenašli.",
         "all": "Zobraziť všetko", "none": "Skryť všetko",
         "found": "Nájdené", "hidefound": "Skryť nájdené", "reset": "Vynulovať",
-        "mark": "Označiť ako nájdené", "unmark": "Nájdené ✓", "copy": "Kopírovať odkaz", "copied": "Skopírované",
+        "mark": "Označiť ako nájdené", "unmark": "Nájdené", "copy": "Kopírovať odkaz", "copied": "Skopírované",
         "region": "Oblasť", "filters": "Filtre", "close": "Zavrieť panel",
         "zoomin": "Priblížiť", "zoomout": "Oddialiť", "fit": "Celá mapa",
-        "note": "Mapa a miesta: GTADB.org a prispievatelia, licencia CC BY 4.0. Názvy, adresy, polohy, tagy a farby bodov sú bez zmeny (preložené sú len názvy typov a filtrov). Na mape je {p} z {n} miest, ostatné ešte nemajú polohu a nájdeš ich vo vyhľadávaní. Oblasti a nápady na RP sú naše.",
+        "note": "Mapa a miesta: GTADB.org a prispievatelia, licencia CC BY 4.0. Názvy, adresy, polohy a farby bodov sú z GTADB; miesta, ktorých názov v hre ešte nie je známy, sú pomenované podľa typu. Na mape je {p} z {n} miest, ostatné ešte nemajú polohu a nájdeš ich vo vyhľadávaní. Oblasti a nápady na RP sú naše.",
         "nameless": "Názov v hre zatiaľ neznámy", "real": "V skutočnosti", "enterable": "Dá sa vstúpiť", "onlyenter": "Len budovy, do ktorých sa dá vstúpiť",
         "photo": "Záber z hry", "ideas": "Nápady na RP postavu", "places": "miest", "loading": "Načítavam miesta…",
         "official": "Otvoriť GTADB.org",
@@ -167,10 +163,10 @@ UI = {
         "search": "Search a place or character…", "noresults": "Nothing found.",
         "all": "Show all", "none": "Hide all",
         "found": "Found", "hidefound": "Hide found", "reset": "Reset",
-        "mark": "Mark as found", "unmark": "Found ✓", "copy": "Copy link", "copied": "Copied",
+        "mark": "Mark as found", "unmark": "Found", "copy": "Copy link", "copied": "Copied",
         "region": "Area", "filters": "Filters", "close": "Close panel",
         "zoomin": "Zoom in", "zoomout": "Zoom out", "fit": "Full map",
-        "note": "Map and places: GTADB.org and contributors, licensed CC BY 4.0, data unchanged. {p} of {n} places are on the map, the rest have no position yet and are in search. Areas and RP ideas are our own.",
+        "note": "Map and places: GTADB.org and contributors, licensed CC BY 4.0. Places whose in-game name is not known yet are titled by their type. {p} of {n} places are on the map, the rest have no position yet and are in search. Areas and RP ideas are our own.",
         "nameless": "In-game name not known yet", "real": "Real-life counterpart", "enterable": "Enterable", "onlyenter": "Only buildings you can enter",
         "photo": "In-game shot", "ideas": "RP character ideas", "places": "places", "loading": "Loading places…",
         "official": "Open GTADB.org",
@@ -191,7 +187,7 @@ def section(lang, v):
     positioned = sum(1 for r in pl if r[2] is not None)
     data = {"lang": lang, "ui": t, "places": f"/{OUT}?v={v['places']}", "photos": PHOTOS, "gtadb": GTADB,
             "layers": [{"id": lid, "name": name, "url": url, "maxNative": 5, "bounds": tile_bounds(rng), "bg": bg} for lid, name, url, rng, bg in LAYERS],
-            "types": [{"id": ty[0], "color": ty[1], "name": ty[2] if lang == "sk" else ty[3]} for ty in TYPES],
+            "types": [{"id": ty[0], "color": ty[1], "name": ty[2] if lang == "sk" else ty[3], "one": ONE[ty[0]][0 if lang == "sk" else 1]} for ty in TYPES],
             "typeIds": TYPE_IDS, "regionColor": REGION_COLOR,
             "regions": [{"id": r[0], "x": r[1][0], "y": r[1][1], "t": r[2], "d": r[3] if lang == "sk" else r[4],
                          "rp": [i[0] if lang == "sk" else i[1] for i in r[5]]} for r in REGIONS]}
@@ -224,7 +220,7 @@ def section(lang, v):
         '<div class="mg-bar"><i data-bar></i></div>'
         f'<div class="mg-progress-actions"><label><input type="checkbox" data-hidefound> {t["hidefound"]}</label>'
         f'<button type="button" data-reset>{t["reset"]}</button></div></div>'
-        f'<p class="mg-note">{t["note"].format(p=nbsp(positioned), n=nbsp(len(pl)))} <a href="{GTADB}" target="_blank" rel="noopener">{t["official"]} ↗</a> · '
+        f'<p class="mg-note">{t["note"].format(p=nbsp(positioned), n=nbsp(len(pl)))} <a href="{GTADB}" target="_blank" rel="noopener">{t["official"]}<svg class="mg-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a> · '
         f'<a href="{lic}" target="_blank" rel="noopener license">CC BY 4.0</a></p>'
         '</aside>'
         f'<div class="mg-map" role="region" aria-label="{t["aria"]}"><div class="mg-leaflet"></div>'
