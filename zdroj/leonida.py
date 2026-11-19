@@ -1,14 +1,17 @@
-"""Interaktívna mapa Leonidy na úvodnej stránke (SK aj EN).
-
-Vygeneruje sekciu medzi <!--leonida--> ... <!--/leonida--> v index.html a en/home.html
-(prvýkrát ju vloží za .ticker) a nastaví ?v= pre assets/leonida.js.
+"""Stránka Mapa Leonidy (SK /mapa/, EN /en/map/) s interaktívnou mapou.
 
     python3 -I zdroj/leonida.py .
+
+Vygeneruje mapa.html a en/map.html zo šablóny rp.html / en/rp.html (hlavička, päta, štýly),
+pridá položku „Mapa“ do menu a päty na všetkých stránkach a nastaví ?v= pre assets/leonida.js.
+Spúšťa sa po zdroj/launch.py a pred zdroj/build.py (blog si menu berie zo šablóny).
 
 Mapa je štylizovaná: obrys podľa Floridy, ktorou sa Leonida inšpiruje, polohy oblastí sú
 orientačné. Oficiálnu mapu (Rockstar, od 19. 11. 2026 na stiahnutie) nekopírujeme, len na ňu odkazujeme.
 """
+import glob
 import hashlib
+import json
 import html
 import os
 import re
@@ -184,7 +187,7 @@ def section(lang):
             f'<div class="lm-ideas"><small>{t["ideas"]}</small><ul>'
             + "".join(f"<li>{html.escape(x)}</li>" for x in c["rp"]) + "</ul></div></article>")
     return (
-        f'<!--leonida--><section class="lm" id="{"mapa" if lang == "sk" else "map"}" aria-labelledby="lm-title" data-leonida data-route="{t["route"]}">'
+        f'<section class="lm" aria-labelledby="lm-title" data-leonida data-route="{t["route"]}">'
         f'<div class="lm-stage"><div class="lm-map" role="group" aria-label="{t["aria"]}">'
         + svg() + '<div class="lm-sweep" aria-hidden="true"></div>'
         + "".join(pins)
@@ -193,13 +196,71 @@ def section(lang):
         f'<button type="button" class="lm-reset" hidden>{t["all"]}</button>'
         '</div>'
         '<div class="lm-side"><div class="lm-head"><span class="eyebrow">' + t["eyebrow"] + '</span>'
-        f'<h2 id="lm-title">{t["h2"]}</h2><p>{t["intro"]}</p></div>'
+        f'<h1 id="lm-title">{t["h2"]}</h1><p>{t["intro"]}</p></div>'
         '<div class="lm-panel" aria-live="polite">' + "".join(data)
         + f'<div class="lm-nav"><button type="button" class="lm-prev" aria-label="{t["prev"]}">←</button>'
         f'<button type="button" class="lm-next" aria-label="{t["next"]}">→</button>'
         f'<a class="button" href="{t["builder"]}">{t["cta"]} {ARROW}</a></div></div></div></div>'
         f'<p class="lm-note">{t["note"]} <a href="https://www.rockstargames.com/VI" target="_blank" rel="noopener">{t["official"]} ↗</a></p>'
-        '</section><!--/leonida-->')
+        '</section>')
+
+
+PAGE = {
+    "sk": dict(tpl="rp.html", out="mapa.html", url="/mapa/", other="/en/map/", tpl_url="/rp/", tpl_other="/en/rp/",
+               title="Mapa Leonidy: oblasti GTA 6 a nápady na RP postavu",
+               desc="Interaktívna mapa Leonidy z GTA 6: Vice City, Leonida Keys, Grassrivers, Ambrosia, Port Gellhorn a Mount Kalaga. Nastav si trasu a nájdi nápad na RP postavu.",
+               crumbs="Drobčeková navigácia", home="/", crumb="Mapa Leonidy",
+               nav_after='<a href="/#o-hre">O GTA 6</a>', nav_link='<a href="/mapa/">Mapa</a>',
+               foot_after='<a href="/rp/">Svet RP</a>', foot_link='<a href="/mapa/">Mapa Leonidy</a>'),
+    "en": dict(tpl="en/rp.html", out="en/map.html", url="/en/map/", other="/mapa/", tpl_url="/en/rp/", tpl_other="/rp/",
+               title="Leonida map: GTA 6 areas and RP character ideas",
+               desc="Interactive map of Leonida from GTA 6: Vice City, Leonida Keys, Grassrivers, Ambrosia, Port Gellhorn and Mount Kalaga. Set a route and find an RP character idea.",
+               crumbs="Breadcrumb", home="/en/", crumb="Leonida map",
+               nav_after='<a href="/en/#o-hre">About GTA 6</a>', nav_link='<a href="/en/map/">Map</a>',
+               foot_after='<a href="/en/rp/">Explore RP</a>', foot_link='<a href="/en/map/">Leonida map</a>'),
+}
+SITE = "https://gta6rp.sk"
+
+
+def page(lang, css, v):
+    c = PAGE[lang]
+    s = open(os.path.join(WEB, c["tpl"]), encoding="utf-8").read()
+    head, body = s.split("</head>", 1)
+    old_title = re.search(r"<title>(.*?)</title>", head).group(1)
+    old_desc = re.search(r'<meta name="description" content="(.*?)">', head).group(1)
+    head = head.replace(old_title, html.escape(c["title"], quote=False)).replace(old_desc, html.escape(c["desc"]))
+    sk_url, en_url = (c["url"], c["other"]) if lang == "sk" else (c["other"], c["url"])
+    sk_tpl, en_tpl = (c["tpl_url"], c["tpl_other"]) if lang == "sk" else (c["tpl_other"], c["tpl_url"])
+    head = head.replace(SITE + en_tpl + '"', SITE + en_url + '"').replace(SITE + sk_tpl + '"', SITE + sk_url + '"')
+    head += f'<style id="lm-css">{css}</style><script defer src="/assets/leonida.js?v={v}"></script>'
+    sw = re.search(r'<div class="language-switch".*?</div>', body).group(0)
+    body = body.replace(sw, sw.replace(f'href="{en_tpl}"', f'href="{en_url}"').replace(f'href="{sk_tpl}"', f'href="{sk_url}"'))
+    body = body.replace(c["nav_link"], c["nav_link"].replace("<a ", '<a aria-current="page" '), 1)
+    crumbs = (f'<div class="lm-crumbs"><nav class="breadcrumbs" aria-label="{c["crumbs"]}"><a href="{c["home"]}">GTA6RP.sk</a>'
+              f'<span>/</span><span aria-current="page">{c["crumb"]}</span></nav></div>')
+    ld = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "GTA6RP.sk", "item": SITE + c["home"]},
+        {"@type": "ListItem", "position": 2, "name": c["crumb"], "item": SITE + c["url"]}]}
+    main = (f'<main id="main">{crumbs}<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'
+            + section(lang) + "</main>")
+    body = re.sub(r'<main id="main">.*</main>', lambda _: main, body, count=1, flags=re.S)
+    open(os.path.join(WEB, c["out"]), "w", encoding="utf-8").write(head + "</head>" + body)
+    print("ok", c["out"])
+
+
+def menu():
+    for path in glob.glob(os.path.join(WEB, "**/*.html"), recursive=True):
+        if os.sep + "zdroj" + os.sep in path:
+            continue
+        s = open(path, encoding="utf-8").read()
+        lang = "en" if 'lang="en"' in s[:200] else "sk"
+        c, t = PAGE[lang], s
+        if c["nav_link"] not in t and c["nav_after"] in t:
+            t = t.replace(c["nav_after"], c["nav_after"] + c["nav_link"], 1)
+        if c["foot_link"] not in t and c["foot_after"] + "<a" in t:
+            t = t.replace(c["foot_after"] + "<a", c["foot_after"] + c["foot_link"] + "<a", 1)
+        if t != s:
+            open(path, "w", encoding="utf-8").write(t)
 
 
 def main():
@@ -208,33 +269,9 @@ def main():
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     css = re.sub(r"\s*([{};:,>])\s*", r"\1", re.sub(r"\s+", " ", css)).replace(";}", "}").strip()
     v = hashlib.sha1(js).hexdigest()[:10]
-    for lang, rel in (("sk", "index.html"), ("en", "en/home.html")):
-        path = os.path.join(WEB, rel)
-        s = open(path, encoding="utf-8").read()
-        block = section(lang)
-        if "<!--leonida-->" in s:
-            a, b = s.index("<!--leonida-->"), s.index("<!--/leonida-->") + len("<!--/leonida-->")
-            s = s[:a] + block + s[b:]
-        else:
-            i = s.index('<div class="ticker">')
-            i = s.index("</div>", i) + len("</div>")
-            s = s[:i] + block + s[i:]
-        tag_css = f'<style id="lm-css">{css}</style>'
-        if 'id="lm-css"' in s:
-            a = s.index('<style id="lm-css">')
-            b = s.index("</style>", a) + len("</style>")
-            s = s[:a] + tag_css + s[b:]
-        else:
-            s = s.replace("</head>", tag_css + "</head>", 1)
-        tag_js = f'<script defer src="/assets/leonida.js?v={v}"></script>'
-        if "/assets/leonida.js" in s:
-            a = s.index('<script defer src="/assets/leonida.js')
-            b = s.index("</script>", a) + len("</script>")
-            s = s[:a] + tag_js + s[b:]
-        else:
-            s = s.replace("</head>", tag_js + "</head>", 1)
-        open(path, "w", encoding="utf-8").write(s)
-        print("ok", rel)
+    menu()
+    for lang in ("sk", "en"):
+        page(lang, css, v)
 
 
 if __name__ == "__main__":

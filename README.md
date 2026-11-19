@@ -15,3 +15,6 @@ Súbory v `assets/` sa cachujú rok. Pri zmene súboru zmeň jeho meno alebo `?v
 
 ## Launch dizajn (vydanie GTA VI)
 `python3 -I zdroj/launch.py .` prepne web na launch verziu (lišta „GTA VI je vonku“, panel s počítadlom dní namiesto odpočtu, texty na úvodnej stránke, päta). Spúšťa sa pred `zdroj/build.py`, blog si hlavičku a pätu berie zo šablóny.
+
+## Mapa Leonidy
+`python3 -I zdroj/leonida.py .` vygeneruje stránku `/mapa/` a `/en/map/` (mapa.html, en/map.html) zo šablóny rp.html a pridá položku „Mapa“ do menu a päty všetkých stránok. Spúšťa sa po `zdroj/launch.py` a pred `zdroj/build.py`. Texty oblastí sú v `zdroj/leonida.py`, štýly v `zdroj/leonida.css`, správanie v `assets/leonida.js`.
