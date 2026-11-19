@@ -54,7 +54,7 @@
     return '<div class="mg-pop"><span class="mg-pop-cat" style="--c:' + cats.oblasti.color + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + cats.oblasti.icon + "</svg>" + esc(cats.oblasti.name) + "</span>" +
       "<h3>" + esc(r.t) + "</h3><p>" + esc(r.d) + "</p>" +
       '<div class="mg-pop-ideas"><small>' + esc(T.ideas) + "</small><div>" + r.rp.map(function (x) { return "<span>" + esc(x) + "</span>"; }).join("") + "</div></div>" +
-      actions(r.id) + '<a class="mg-pop-cta" href="' + T.builder + '">' + esc(T.cta) + " ↗</a></div>";
+      actions(r.id) + "</div>";
   }
   function placeHtml(p) {
     var c = cats[p.cat], title = p.name || p.rl || p.addr || "?";

@@ -207,7 +207,6 @@ def section(lang, v):
         f'<button type="button" data-reset>{t["reset"]}</button></div></div>'
         f'<p class="mg-note">{t["note"]} <a href="{GTADB}" target="_blank" rel="noopener">{t["official"]} ↗</a> · '
         f'<a href="{lic}" target="_blank" rel="noopener license">CC BY 4.0</a></p>'
-        f'<a class="button mg-cta" href="{t["builder"]}">{t["cta"]} ↗</a>'
         '</aside>'
         f'<div class="mg-map" role="region" aria-label="{t["aria"]}"><div class="mg-leaflet"></div>'
         f'<div class="mg-loading" data-loading>{t["loading"]}</div>'
@@ -250,6 +249,8 @@ def page(lang, css, v):
     sw = re.search(r'<div class="language-switch".*?</div>', body).group(0)
     body = body.replace(sw, sw.replace(f'href="{en_tpl}"', f'href="{en_url}"').replace(f'href="{sk_tpl}"', f'href="{sk_url}"'))
     body = body.replace(c["nav_link"], c["nav_link"].replace("<a ", '<a aria-current="page" '), 1)
+    # Na stránke mapy bez tlačidla „Tvorba postavy“ v hlavičke (želanie Matthewa, 19. 11. 2026).
+    body = re.sub(r'<a class="button small" href="[^"]*">.*?</svg></a>', "", body, count=1, flags=re.S)
     crumbs = (f'<div class="mg-crumbs"><nav class="breadcrumbs" aria-label="{c["crumbs"]}"><a href="{c["home"]}">GTA6RP.sk</a>'
               f'<span>/</span><span aria-current="page">{c["crumb"]}</span></nav></div>')
     ld = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
