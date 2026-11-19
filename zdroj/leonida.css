@@ -161,3 +161,11 @@
 .mg-cats-2 .mg-cat{min-width:0}
 .mg-cats-2 .mg-cat-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mg-arrow{width:12px;height:12px;margin-left:3px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+/* text pod mapou (SEO) */
+.mg-about p{color:#d9c8e6;line-height:1.75;margin:18px 0 0;max-width:620px}
+.mg-about h3{margin:34px 0 14px;color:#9c8bb0;font:800 11px Manrope,Arial,sans-serif;letter-spacing:2px;text-transform:uppercase}
+.mg-about .mg-faq-h{margin-top:6px}
+.mg-areas{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.mg-areas li{color:#bfb0cc;font-size:14px;line-height:1.6}
+.mg-areas b{display:block;color:#faf2f9;font:600 17px Oswald,Arial,sans-serif;letter-spacing:1px;text-transform:uppercase}
+@media (max-width:900px){.mg-about{grid-template-columns:1fr;gap:30px}.mg-about h2{font-size:34px}}

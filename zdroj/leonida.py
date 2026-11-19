@@ -231,6 +231,63 @@ def section(lang, v):
         f'<script type="application/json" id="mg-data">{payload}</script>'
         '</section>')
 
+PLUS = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>'
+ABOUT = {
+    "sk": {
+        "eyebrow": "O MAPE", "h2": "Mapa Leonidy<br>v GTA 6",
+        "intro": [
+            "Leonida je štát, v ktorom sa odohráva GTA VI. Je to herná obdoba Floridy a jej centrom je Vice City. Na tejto mape nájdeš všetkých {n} miest z komunitnej databázy GTADB.org: hotely, obchody, reštaurácie, štátne budovy, prírodu aj dopravu.",
+            "Miesta môžeš filtrovať podľa typu, hľadať podľa názvu alebo oblasti a označovať si, čo si už v hre našiel. Odkaz na každé miesto sa dá skopírovať a poslať kamarátovi.",
+        ],
+        "areas": "Oblasti Leonidy", "faqh": "Časté otázky",
+        "faq": [
+            ("Je to oficiálna mapa GTA 6?", "Podklad a miesta pochádzajú z GTADB.org, komunitného projektu, ktorý mapu Leonidy skladá zo záberov z hry a trailerov. Nie je to export od Rockstar Games, ale názvy a polohy sa priebežne overujú a dopĺňajú."),
+            ("Koľko miest je na mape?", "Na mape je {n} miest, z toho {p} s presnou polohou. Pri {named} z nich je známy aj názov priamo z hry, ostatné sú zatiaľ pomenované podľa typu, napríklad Hotel alebo Obchod."),
+            ("Ako nájdem konkrétne miesto?", "Napíš názov alebo oblasť do vyhľadávania (na mobile pod tlačidlom Filtre). Mapa sa presunie na miesto a otvorí jeho detail."),
+            ("Funguje mapa aj na mobile?", "Áno. Na mobile otvoríš filtre a vyhľadávanie tlačidlom Filtre dole na mape a mapu priblížiš dvoma prstami."),
+            ("Dá sa už hrať GTA 6 RP?", "Zatiaľ nie. GTA VI vyšlo ako hra pre jedného hráča a RP bude možné, až keď vyjde online režim. Rockstar Games ho zatiaľ neoznámil."),
+        ],
+    },
+    "en": {
+        "eyebrow": "ABOUT THE MAP", "h2": "The map of Leonida<br>in GTA 6",
+        "intro": [
+            "Leonida is the state where GTA VI takes place. It is the game's version of Florida, with Vice City at its heart. This map shows all {n} places from the community database GTADB.org: hotels, shops, restaurants, government buildings, nature and transport.",
+            "You can filter places by type, search by name or area and mark what you have already found in the game. Every place has a link you can copy and send to a friend.",
+        ],
+        "areas": "Areas of Leonida", "faqh": "FAQ",
+        "faq": [
+            ("Is this the official GTA 6 map?", "The base map and places come from GTADB.org, a community project that builds the map of Leonida from in-game footage and trailers. It is not an export from Rockstar Games, but names and positions are checked and added continuously."),
+            ("How many places are on the map?", "The map has {n} places, {p} of them with an exact position. {named} have a name confirmed from the game, the rest are titled by their type for now, such as Hotel or Shop."),
+            ("How do I find a specific place?", "Type a name or area into the search (on mobile, under the Filters button). The map moves to the place and opens its details."),
+            ("Does the map work on mobile?", "Yes. On mobile, open filters and search with the Filters button at the bottom of the map and zoom with two fingers."),
+            ("Can I play GTA 6 RP yet?", "Not yet. GTA VI launched as a single-player game and RP will be possible once the online mode is out. Rockstar Games has not announced it yet."),
+        ],
+    },
+}
+
+
+def about(lang):
+    """Text pod mapou pre ľudí aj vyhľadávače: čo na mape je, oblasti a časté otázky (+ FAQPage)."""
+    a = ABOUT[lang]
+    pl = places()
+    fmt = (lambda n: f"{n:,}".replace(",", " ")) if lang == "sk" else (lambda n: f"{n:,}")
+    named = sum(1 for r in pl if r[1] and r[1][0] not in '?"' and "?," not in r[1])
+    nums = dict(n=fmt(len(pl)), p=fmt(sum(1 for r in pl if r[2] is not None)), named=fmt(named))
+    faq = [(q, ans.format(**nums)) for q, ans in a["faq"]]
+    areas = "".join(f'<li><b>{html.escape(r[2])}</b> {html.escape(r[3] if lang == "sk" else r[4])}</li>' for r in REGIONS)
+    ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": ans}} for q, ans in faq]}
+    return (
+        '<section class="section launch-faq mg-about"><div>'
+        f'<div class="eyebrow muted">{a["eyebrow"]}</div><h2>{a["h2"]}</h2>'
+        + "".join(f"<p>{html.escape(x.format(**nums))}</p>" for x in a["intro"])
+        + f'<h3>{a["areas"]}</h3><ul class="mg-areas">{areas}</ul></div>'
+        f'<div><h3 class="mg-faq-h">{a["faqh"]}</h3><div class="faq-list">'
+        + "".join(f"<details><summary>{html.escape(q)}{PLUS}</summary><p>{html.escape(ans)}</p></details>" for q, ans in faq)
+        + "</div></div>"
+        f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script></section>')
+
+
 
 def tile_bounds(rng):
     x0, y0, x1, y1 = rng
@@ -239,14 +296,16 @@ def tile_bounds(rng):
 
 PAGE = {
     "sk": dict(tpl="rp.html", out="mapa.html", url="/mapa/", other="/en/map/", tpl_url="/rp/", tpl_other="/en/rp/",
-               title="Mapa Leonidy: oblasti GTA 6 a nápady na RP postavu",
-               desc="Interaktívna mapa Leonidy z GTA 6: Vice City, Leonida Keys, Grassrivers, Ambrosia, Port Gellhorn a Mount Kalaga. Nastav si trasu a nájdi nápad na RP postavu.",
+               title="GTA 6 mapa Leonidy: interaktívna mapa s 3 749 miestami",
+               desc="Interaktívna mapa GTA 6: všetkých 3 749 miest Leonidy s filtrami a vyhľadávaním. Vice City, Leonida Keys, Grassrivers, Ambrosia, Port Gellhorn a Mount Kalaga.",
+               og="og-mapa.jpg", og_alt="Interaktívna mapa Leonidy z GTA 6 na GTA6RP.sk",
                crumbs="Drobčeková navigácia", home="/", crumb="Mapa Leonidy",
                nav_after='<a href="/#o-hre">O GTA 6</a>', nav_link='<a href="/mapa/">Mapa</a>',
                foot_after='<a href="/rp/">Svet RP</a>', foot_link='<a href="/mapa/">Mapa Leonidy</a>'),
     "en": dict(tpl="en/rp.html", out="en/map.html", url="/en/map/", other="/mapa/", tpl_url="/en/rp/", tpl_other="/rp/",
-               title="Leonida map: GTA 6 areas and RP character ideas",
-               desc="Interactive map of Leonida from GTA 6: Vice City, Leonida Keys, Grassrivers, Ambrosia, Port Gellhorn and Mount Kalaga. Set a route and find an RP character idea.",
+               title="GTA 6 map of Leonida: interactive map with 3,749 places",
+               desc="Interactive GTA 6 map: all 3,749 places in Leonida with filters and search. Vice City, Leonida Keys, Grassrivers, Ambrosia, Port Gellhorn and Mount Kalaga.",
+               og="og-map-en.jpg", og_alt="Interactive GTA 6 map of Leonida on GTA6RP.sk",
                crumbs="Breadcrumb", home="/en/", crumb="Leonida map",
                nav_after='<a href="/en/#o-hre">About GTA 6</a>', nav_link='<a href="/en/map/">Map</a>',
                foot_after='<a href="/en/rp/">Explore RP</a>', foot_link='<a href="/en/map/">Leonida map</a>'),
@@ -261,6 +320,9 @@ def page(lang, css, v):
     old_title = re.search(r"<title>(.*?)</title>", head).group(1)
     old_desc = re.search(r'<meta name="description" content="(.*?)">', head).group(1)
     head = head.replace(old_title, html.escape(c["title"], quote=False)).replace(old_desc, html.escape(c["desc"]))
+    # vlastný obrázok na zdieľanie
+    head = head.replace(SITE + "/og-brand.jpg", SITE + "/" + c["og"])
+    head = re.sub(r'(<meta (?:property="og:image:alt"|name="twitter:image:alt") content=")[^"]*"', lambda m: m.group(1) + html.escape(c["og_alt"]) + '"', head)
     sk_url, en_url = (c["url"], c["other"]) if lang == "sk" else (c["other"], c["url"])
     sk_tpl, en_tpl = (c["tpl_url"], c["tpl_other"]) if lang == "sk" else (c["tpl_other"], c["tpl_url"])
     head = head.replace(SITE + en_tpl + '"', SITE + en_url + '"').replace(SITE + sk_tpl + '"', SITE + sk_url + '"')
@@ -277,7 +339,7 @@ def page(lang, css, v):
         {"@type": "ListItem", "position": 1, "name": "GTA6RP.sk", "item": SITE + c["home"]},
         {"@type": "ListItem", "position": 2, "name": c["crumb"], "item": SITE + c["url"]}]}
     main = (f'<main id="main">{crumbs}<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'
-            + section(lang, v) + "</main>")
+            + section(lang, v) + about(lang) + "</main>")
     body = re.sub(r'<main id="main">.*</main>', lambda _: main, body, count=1, flags=re.S)
     open(os.path.join(WEB, c["out"]), "w", encoding="utf-8").write(head + "</head>" + body)
     print("ok", c["out"])
