@@ -51,6 +51,11 @@ RewriteCond %{HTTP:Accept-Language} ^[a-z]
 RewriteCond %{HTTP:Accept-Language} !^(?:sk|cs)\b [NC]
 RewriteRule ^$ https://gta6rp.sk/en/ [R=302,L]
 
+# Leonida map (SK /mapa/, EN /en/map/): clean addresses with a trailing slash.
+RewriteCond %{THE_REQUEST} \s/+(?:mapa|en/map)\.html(?:[?\s]) [NC]
+RewriteRule ^(mapa|en/map)\.html$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^(mapa|en/map)$ https://gta6rp.sk/$1/ [R=301,L]
+RewriteRule ^(mapa|en/map)/$ $1.html [L]
 # Blog (SK /blog/, EN /en/blog/): clean addresses with a trailing slash.
 RewriteCond %{THE_REQUEST} \s/+(?:en/)?blog(?:/index)?\.html(?:[?\s]) [NC]
 RewriteRule ^(en/)?blog(?:/index)?\.html$ https://gta6rp.sk/$1blog/ [R=301,L]
