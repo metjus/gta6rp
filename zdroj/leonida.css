@@ -66,7 +66,6 @@
 .mg-mk:hover .mg-pin,.mg-mk.is-active .mg-pin{transform:rotate(-45deg) scale(1.18)}
 .mg-mk.is-active .mg-pin{box-shadow:0 0 0 4px #fff,0 0 24px 4px var(--c)}
 .mg-mk.is-found .mg-pin{filter:grayscale(.7) brightness(.6)}
-.mg-mk.is-found .mg-pin::after{content:"✓";position:absolute;transform:rotate(45deg);right:-6px;top:-6px;width:16px;height:16px;border-radius:50%;background:#5fd4c4;color:#0b0814;font:900 10px/16px Manrope,Arial,sans-serif;text-align:center}
 .mg-region{background:none;border:0}
 .mg-far .mg-pin{width:14px;height:14px;border-width:2px;border-radius:50%;transform:translate(10px,13px)}
 .mg-far .mg-pin svg,.mg-far .mg-mk.is-found .mg-pin::after{display:none}
@@ -161,3 +160,4 @@
 .mg-cats-2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .mg-cats-2 .mg-cat{min-width:0}
 .mg-cats-2 .mg-cat-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mg-arrow{width:12px;height:12px;margin-left:3px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}

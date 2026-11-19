@@ -86,12 +86,24 @@
   });
 
   /* --- údaje GTADB, rovnaké pravidlá ako map/index.js --- */
-  function igName(p) { return p.ig.split(", ")[0] || "?"; }
+  /* zobrazenie bez otáznikov: neznámy názov v hre nahradí typ miesta, adresa ostane len oblasť */
+  function clean(t) { return t.replace(/["?]/g, "").replace(/\s*\([NSEW]+\)/g, "").replace(/\s{2,}/g, " ").trim(); }
+  function display(p) {
+    if (p.disp) return p.disp;
+    var parts = p.ig.split(", "), first = parts[0] || "", name = clean(first);
+    var named = !!name && first[0] !== '"';
+    var area = parts.slice(1).map(clean).filter(Boolean).join(", ");
+    var title = named ? name : types[p.types[0]].one;
+    var addr = named ? [name].concat(area ? [area] : []).join(", ") : (area || "Leonida");
+    return (p.disp = { title: title, addr: addr, named: named });
+  }
+  function igName(p) { return display(p).title; }
   function rlAddr(p) { return p.rl.replace(/(?!^)\?$/, ""); }
   function rlName(p) { return rlAddr(p).split(", ")[0] || "?"; }
   function visTags(p) { return p.tags.filter(function (t) { return !/^\/\//.test(t) && !/^L\d+$/i.test(t); }); }
   function typesOf(p) { var t = p.tags.filter(function (x) { return typeIds.has(x); }); return t.length ? t : ["unclassified"]; }
   function rlStatus(p) { return p.rl === "" || p.rl === "?" ? "unknown" : p.tags.indexOf("unconfirmed") > -1 ? "unconfirmed" : "confirmed"; }
+  var ARROW = '<svg class="mg-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>';
   var STREET = /\s(?:Ave|Blvd|Ct|Dr|Hwy|Ln|Pkwy|Pl|Rd|St|Way),/;
   var FILTERS = {
     all: function () { return true; },
@@ -134,20 +146,18 @@
       actions(r.id) + "</div>";
   }
   function placeHtml(p) {
-    var tg = visTags(p), ra = rlAddr(p);
+    var dp = display(p), tg = visTags(p).filter(function (t) { return !typeIds.has(t) && t !== "unconfirmed"; });
     var ty = p.types.map(function (t) { return '<span class="mg-pop-type" style="--c:' + types[t].color + '">' + esc(types[t].name) + "</span>"; }).join("");
     var gl = D.gtadb + "#VI," + (p.ll ? p.x.toFixed(3) + "," + p.y.toFixed(3) : "0.000,0.000") + ",4.000," + p.id;
     return '<div class="mg-pop">' +
       (p.igV !== null ? photo(p, "ig", p.igV, T.photo + ": " + igName(p)) : "") +
       '<div class="mg-pop-types">' + ty + '<span class="mg-pop-id">' + esc(p.id) + "</span></div>" +
       "<h3>" + esc(igName(p)) + "</h3>" +
-      '<p class="mg-pop-addr">' + esc(p.ig || "?") + "</p>" +
+      '<p class="mg-pop-addr">' + esc(dp.addr) + "</p>" +
       (p.ll ? "" : '<p class="mg-pop-nopos">' + esc(T.nopos) + "</p>") +
-      '<div class="mg-pop-rl"><small>' + esc(T.real) + "</small><b>" + esc(rlName(p)) + "</b>" + (ra && ra !== rlName(p) ? "<span>" + esc(ra) + "</span>" : "") + "</div>" +
-      (p.rlV !== null ? photo(p, "rl", p.rlV, T.rlphoto + ": " + rlName(p)) : "") +
       (tg.length ? '<div class="mg-pop-tags"><small>' + esc(T.tags) + "</small>" + tg.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "") +
       actions(p.id) +
-      '<a class="mg-pop-src" href="' + gl + '" target="_blank" rel="noopener">GTADB.org ↗</a></div>';
+      '<a class="mg-pop-src" href="' + gl + '" target="_blank" rel="noopener">GTADB.org' + ARROW + "</a></div>";
   }
   function actions(id) {
     var f = found.has(id);
@@ -197,7 +207,7 @@
     if (!p.ll) return;
     var m = new Pin(p.ll, styleFor(p));
     m.on("click", function (e) { L.DomEvent.stop(e); closePanel(); openItem(p); });
-    m.on("mouseover", function () { tip.setLatLng(p.ll).setContent(esc(igName(p)) + "<br><small>" + esc(rlName(p)) + "</small>"); map.openTooltip(tip); });
+    m.on("mouseover", function () { tip.setLatLng(p.ll).setContent(esc(igName(p)) + "<br><small>" + esc(display(p).addr) + "</small>"); map.openTooltip(tip); });
     m.on("mouseout", function () { map.closeTooltip(tip); });
     p.marker = m;
   }
@@ -285,8 +295,8 @@
     var total = hits.length;
     hits = hits.slice(0, 15); sel = -1;
     list.innerHTML = hits.length ? hits.map(function (it, i) {
-      var title = it.region ? it.t : igName(it) + " · " + rlName(it);
-      var sub = it.region ? T.region + " · GTA6RP.sk" : (it.ig || "?") + (it.ll ? "" : " · " + T.nopos);
+      var title = it.region ? it.t : igName(it);
+      var sub = it.region ? T.region + " · GTA6RP.sk" : display(it).addr + (it.ll ? "" : " · " + T.nopos);
       var col = it.region ? D.regionColor : it.color;
       return '<li role="option" id="mg-r' + i + '"><button type="button" tabindex="-1" data-id="' + esc(it.id) + '"><span class="mg-ico" style="--c:' + col + '"></span><span>' + esc(title) + "<small>" + esc(sub) + "</small></span></button></li>";
     }).join("") + (total > 15 ? '<li class="mg-empty">+ ' + num(total - 15) + " " + esc(T.more) + "</li>" : "") : '<li class="mg-empty">' + esc(T.noresults) + "</li>";
@@ -333,7 +343,7 @@
       var p = { id: r[0], ig: r[1], x: r[2], y: r[3], rl: r[4], tags: r[5], igV: r[6], rlV: r[7], rlLL: r[8] === 1, color: "#" + r[9] };
       p.ll = p.x === null ? null : [p.y, p.x];
       p.types = typesOf(p);
-      p.find = norm(p.id + "\n" + p.ig + "\n" + p.rl + "\n" + p.tags.join("\n"));
+      p.find = norm(p.id + "\n" + p.ig + "\n" + display(p).title + "\n" + p.tags.join("\n"));
       addPlace(p); items.push(p); places.push(p); byId[p.id] = p;
     });
     render();
