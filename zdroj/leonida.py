@@ -1,292 +1,195 @@
-"""Stránka Mapa Leonidy (SK /mapa/, EN /en/map/): interaktívna mapa s kategóriami a filtrami.
+"""Stránka Mapa Leonidy (SK /mapa/, EN /en/map/): interaktívna mapa GTA VI s filtrami.
 
     python3 -I zdroj/leonida.py .
 
-Čo urobí:
-- vygeneruje podklad mapy assets/leonida-base.svg (štylizovaná Leonida podľa Floridy),
-- vygeneruje mapa.html a en/map.html zo šablóny rp.html / en/rp.html (hlavička, päta, štýly),
-- dá do stránky údaje o značkách (CATS, MARKERS nižšie) ako JSON,
-- pridá položku „Mapa“ do menu a päty na všetkých stránkach,
-- nastaví ?v= pre assets/mapa.js, assets/leaflet.js a assets/leaflet.css.
-Spúšťa sa po zdroj/launch.py a pred zdroj/build.py (blog si menu berie zo šablóny).
+Podklad mapy a miesta sú z projektu GTADB.org (https://map.gtadb.org), licencia CC BY 4.0,
+autori: GTADB.org a prispievatelia. Zdroj je v zdroj/gtadb/ (landmarks-6.json, LICENSE-DATA,
+SOURCE = commit). Dlaždice mapy (sada „day“, zoom 0 až 5) sú v assets/mapa/day/{z}/{z},{y},{x}.jpg.
+Aktualizácia: skopíruj nový map/data/6/landmarks.json z github.com/rolux/gtadb.org do
+zdroj/gtadb/landmarks-6.json, zapíš commit do SOURCE a spusti tento skript.
 
-Mapový engine je Leaflet 1.9.4 (BSD-2, assets/leaflet.js). Súradnice značiek sú v pixeloch
-podkladu (BASE_W x BASE_H, 0,0 vľavo hore). Pozícia sa dá zistiť na /mapa/?edit: klik do mapy
-ukáže súradnice. Údaje sú len z oficiálnych informácií Rockstar Games, polohy sú približné.
-Nové značky: pridaj riadok do MARKERS (id, kategória, x, y, texty SK aj EN).
+Čo urobí:
+- z údajov GTADB vygeneruje assets/mapa/miesta.json (názov, adresa, kategória, súradnice, fotka),
+- vygeneruje mapa.html a en/map.html zo šablóny rp.html / en/rp.html,
+- pridá položku „Mapa“ do menu a päty na všetkých stránkach.
+Súradnice sú herné (x, y) ako na GTADB. Spúšťa sa po zdroj/launch.py a pred zdroj/build.py.
 """
 import glob
 import hashlib
 import html
 import json
-import math
 import os
 import re
 import sys
 
 WEB = sys.argv[1] if len(sys.argv) > 1 else "."
-W, H = 820, 780
-BASE = "assets/leonida-base.svg"
-BASE_W, BASE_H = W, H
+SRC = os.path.join(WEB, "zdroj/gtadb/landmarks-6.json")
+OUT = "assets/mapa/miesta.json"
+TILES = "/assets/mapa/day/{z}/{z},{y},{x}.jpg"
+# Rozsah dlaždíc sady „day“ pri zoome 5 (x0, y0, x1, y1), podľa maps/maps.js na GTADB.
+TILE_RANGE_Z5 = (17, 17, 83, 103)
+GTADB = "https://map.gtadb.org/"
+PHOTOS = "https://map.gtadb.org/photos/6/"
+LICENSE = "https://creativecommons.org/licenses/by/4.0/deed."
 
-
-def pt(lon, lat):
-    return (lon + 88) * 90 + 40, (31.3 - lat) * 104 + 30
-
-
-COAST = [
-    (-87.52, 30.28), (-87.6, 30.99), (-86.2, 31.0), (-85.0, 31.0), (-84.86, 30.71), (-83.5, 30.64),
-    (-82.2, 30.57), (-82.0, 30.62), (-81.45, 30.72), (-81.4, 30.4), (-81.25, 29.8), (-81.0, 29.25),
-    (-80.75, 28.75), (-80.55, 28.45), (-80.6, 28.1), (-80.38, 27.6), (-80.15, 27.1), (-80.03, 26.6),
-    (-80.08, 26.0), (-80.12, 25.75), (-80.3, 25.45), (-80.4, 25.25), (-80.6, 25.18), (-81.05, 25.13),
-    (-81.15, 25.35), (-81.35, 25.8), (-81.72, 25.95), (-81.85, 26.35), (-82.05, 26.55), (-82.25, 26.85),
-    (-82.45, 27.2), (-82.68, 27.45), (-82.6, 27.85), (-82.82, 27.95), (-82.75, 28.3), (-82.65, 28.75),
-    (-82.75, 29.05), (-83.05, 29.15), (-83.4, 29.5), (-83.7, 29.95), (-84.1, 30.08), (-84.35, 30.0),
-    (-84.65, 29.85), (-85.05, 29.65), (-85.35, 29.68), (-85.4, 29.95), (-85.7, 30.15), (-86.1, 30.38),
-    (-86.6, 30.4), (-87.2, 30.32),
-]
-KEYS = [(-80.38, 25.16), (-80.5, 25.0), (-80.66, 24.88), (-80.86, 24.78), (-81.06, 24.72),
-        (-81.3, 24.67), (-81.52, 24.63), (-81.78, 24.56)]
-ROADS = [
-    [(-80.15, 25.78), (-80.1, 26.6), (-80.35, 27.6), (-80.75, 28.6), (-81.3, 29.9), (-81.6, 30.5)],
-    [(-80.25, 25.9), (-80.9, 26.1), (-81.75, 26.15)],
-    [(-80.45, 25.45), (-80.5, 25.05), (-81.0, 24.76), (-81.75, 24.58)],
-    [(-81.3, 29.9), (-82.4, 30.3), (-84.3, 30.45), (-85.7, 30.45), (-87.2, 30.5)],
-    [(-80.2, 26.3), (-81.0, 27.4), (-81.4, 28.5), (-82.4, 29.6), (-82.4, 30.3)],
-]
-
-
-def smooth(points, closed):
-    p = [pt(*q) for q in points]
-    n = len(p)
-    d = f"M{p[0][0]:.1f} {p[0][1]:.1f}"
-    last = n if closed else n - 1
-    for i in range(last):
-        p0 = p[(i - 1) % n] if closed or i > 0 else p[i]
-        p1, p2 = p[i], p[(i + 1) % n]
-        p3 = p[(i + 2) % n] if closed or i + 2 < n else p2
-        c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
-        c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
-        d += f"C{c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f}"
-    return d + ("Z" if closed else "")
-
-
-
-
-def base_svg():
-    land = smooth(COAST, True)
-    ok = pt(-80.83, 26.95)
-    keys = "".join(
-        f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="{9 - i * .5:.1f}" ry="3.2" transform="rotate({-28 + i * 2} {x:.1f} {y:.1f})"/>'
-        for i, (x, y) in enumerate(pt(*k) for k in KEYS))
-    roads = "".join(f'<path d="{smooth(r, False)}"/>' for r in ROADS)
-    grid = "".join(f'<path d="M{x} 0V{H}"/>' for x in range(0, W + 1, 41)) + "".join(f'<path d="M0 {y}H{W}"/>' for y in range(0, H + 1, 39))
-    return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W * 2}" height="{H * 2}">'
-        '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff965d"/><stop offset=".55" stop-color="#fa399c"/><stop offset="1" stop-color="#b22bdd"/></linearGradient>'
-        '<radialGradient id="land" cx=".75" cy=".75" r=".9"><stop stop-color="#2f1d45"/><stop offset="1" stop-color="#1c1530"/></radialGradient>'
-        '<filter id="blur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="6"/></filter></defs>'
-        f'<rect width="{W}" height="{H}" fill="#0d0a17"/>'
-        f'<g stroke="#ffffff08" stroke-width=".6">{grid}</g>'
-        f'<path d="{land}" fill="none" stroke="url(#g)" stroke-width="12" opacity=".22" filter="url(#blur)"/>'
-        f'<path d="{land}" fill="url(#land)"/>'
-        f'<g fill="#2f1d45" stroke="#fa399c" stroke-width=".8">{keys}</g>'
-        f'<ellipse cx="{ok[0]:.1f}" cy="{ok[1]:.1f}" rx="22" ry="27" fill="#120d20" stroke="#fa399c55"/>'
-        f'<g fill="none" stroke="#ffffff22" stroke-width="1.2" stroke-dasharray="3 6">{roads}</g>'
-        f'<path d="{land}" fill="none" stroke="url(#g)" stroke-width="2" stroke-linejoin="round"/>'
-        '</svg>')
-
-
-# Kategórie: id, skupina, farba, ikona (cesta SVG 24x24, lucide), názvy SK/EN.
 ICONS = {
     "region": '<path d="M14.1 4.6 9.9 2.5a2 2 0 0 0-1.8 0L3.6 4.8A1 1 0 0 0 3 5.7v14.6a.7.7 0 0 0 1 .6l4.1-2.1a2 2 0 0 1 1.8 0l4.2 2.1a2 2 0 0 0 1.8 0l4.5-2.3a1 1 0 0 0 .6-.9V3.7a.7.7 0 0 0-1-.6l-4.1 2.1a2 2 0 0 1-1.8 0M15 5.8v15M9 3.2v15"/>',
-    "place": '<path d="M20 10c0 5-5.5 10.2-7.4 11.8a1 1 0 0 1-1.2 0C9.5 20.2 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
-    "person": '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
-    "activity": '<circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.4-6.3 2.1 2.1-6.4z"/>',
-    "rp": '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
+    "star": '<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2-6.2 3.2 1.2-6.8-5-4.9 6.9-1z"/>',
+    "bed": '<path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>',
+    "food": '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+    "bag": '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4ZM3 6h18M16 10a4 4 0 0 1-8 0"/>',
+    "bus": '<path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/>',
+    "fun": '<path d="M5.8 11.3 2 22l10.7-3.8M4 3h.01M22 8h.01M15 2h.01M22 20h.01M22 2l-2.2.7a2.9 2.9 0 0 0-1.9 3.4c.2.9-.5 1.9-1.5 1.9h-.4M8.6 2.7a2.9 2.9 0 0 1-1 3.3 2.9 2.9 0 0 0-1.3 3.7"/><path d="m11 13 2-2"/>',
+    "gov": '<path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z"/>',
+    "office": '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+    "factory": '<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>',
+    "home": '<path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>',
+    "tree": '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7zM12 22v-3"/>',
+    "dot": '<circle cx="12" cy="12" r="4"/>',
 }
 
-GROUPS = [("game", "Svet GTA VI", "World of GTA VI"), ("rp", "Roleplay", "Roleplay")]
+# Kategórie: id, ikona, farba, SK, EN, tagy z GTADB (prvá zhoda vyhráva).
 CATS = [
-    {"id": "oblasti", "group": "game", "icon": "region", "color": "#ff7aa8", "sk": "Oblasti", "en": "Areas"},
-    {"id": "miesta", "group": "game", "icon": "place", "color": "#ffb36b", "sk": "Miesta", "en": "Places"},
-    {"id": "postavy", "group": "game", "icon": "person", "color": "#c58bff", "sk": "Postavy", "en": "Characters"},
-    {"id": "aktivity", "group": "game", "icon": "activity", "color": "#5fd4c4", "sk": "Aktivity", "en": "Activities"},
-    {"id": "rp", "group": "rp", "icon": "rp", "color": "#7fa8ff", "sk": "Nápady na RP postavu", "en": "RP character ideas"},
+    ("oblasti", "region", "#ff5fa2", "Oblasti", "Areas", None),
+    ("pamiatky", "star", "#ffd166", "Pamätihodnosti", "Landmarks", ["landmark"]),
+    ("hotely", "bed", "#c792ff", "Hotely", "Hotels", ["hotel"]),
+    ("jedlo", "food", "#ff8a5c", "Reštaurácie a bary", "Restaurants and bars", ["restaurant"]),
+    ("obchody", "bag", "#ff6ad5", "Obchody", "Shops", ["retail", "#supermarket", "#clothes", "#hair"]),
+    ("doprava", "bus", "#4cc9f0", "Doprava", "Transport", ["transportation", "#bus", "#train", "#airport", "#marina", "#metromover", "#gas"]),
+    ("zabava", "fun", "#f9f871", "Voľný čas a zábava", "Leisure and events", ["leisure", "events"]),
+    ("verejne", "gov", "#90e0ef", "Verejné budovy", "Public buildings", ["government", "public"]),
+    ("kancelarie", "office", "#b8c0ff", "Kancelárie", "Offices", ["office"]),
+    ("priemysel", "factory", "#adb5bd", "Priemysel", "Industry", ["industrial", "utilities", "construction"]),
+    ("byvanie", "home", "#80ed99", "Bývanie", "Housing", ["residential"]),
+    ("priroda", "tree", "#52b788", "Príroda", "Nature", ["natural"]),
+    ("ostatne", "dot", "#e9ecef", "Ostatné", "Other", []),
 ]
+GROUPS = [("game", ["oblasti"], "Leonida", "Leonida"),
+          ("places", [c[0] for c in CATS[1:]], "Miesta (GTADB.org)", "Places (GTADB.org)")]
 
+# Oblasti, ktoré pomenoval Rockstar. Poloha (herné x, y) je stred oblasti na mape GTADB.
 REGIONS = [
-    ("vice-city", (-80.2, 25.78), "Vice City",
+    ("vice-city", (-900, 300), "Vice City",
      "Moderná metropola plná pláží, nočných klubov, áut a sociálnych sietí. Mesto, ktoré preslávilo GTA: Vice City z roku 2002, sa vracia po viac ako dvadsiatich rokoch.",
      "A modern metropolis of beaches, nightclubs, cars and social media. The city made famous by 2002's GTA: Vice City returns after more than twenty years.",
      [("Influencerka", "Influencer"), ("Kaucionár", "Bail bondsman"), ("Promotér klubu", "Club promoter")]),
-    ("leonida-keys", (-81.1, 24.7), "Leonida Keys",
-     "Reťaz ostrovov na juhu štátu. Mosty nad tyrkysovou vodou, rybárske lode a pomalý život, za ktorým sa niekedy skrýva pašovanie.",
-     "A chain of islands in the south of the state. Bridges over turquoise water, fishing boats and a slow pace of life that sometimes hides smuggling.",
+    ("leonida-keys", (-3700, -6500), "Leonida Keys",
+     "Reťaz ostrovov na juhu štátu. Mosty nad tyrkysovou vodou, rybárske lode a pomalý život, za ktorým sa niekedy skrýva pašovanie. Tu žije Jason Duval.",
+     "A chain of islands in the south of the state. Bridges over turquoise water, fishing boats and a slow pace of life that sometimes hides smuggling. Home of Jason Duval.",
      [("Kapitánka lode", "Boat captain"), ("Barman z prístavu", "Harbour bartender"), ("Potápač", "Diver")]),
-    ("grassrivers", (-81.2, 25.98), "Grassrivers",
+    ("grassrivers", (-3300, -4300), "Grassrivers",
      "Rozsiahle močiare a mokrade, obdoba Everglades. Člny s obrovskou vrtuľou, aligátory a ľudia, ktorí žijú ďaleko od mesta a jeho pravidiel.",
      "Vast swamps and wetlands, Leonida's version of the Everglades. Airboats, alligators and people living far from the city and its rules.",
      [("Sprievodca na airboate", "Airboat guide"), ("Samotár z močiara", "Swamp loner"), ("Rybár", "Fisherman")]),
-    ("ambrosia", (-81.25, 26.85), "Ambrosia",
+    ("ambrosia", (-2769, 3882), "Ambrosia",
      "Priemyselné mesto, ktorého život sa točí okolo rafinérie cukru. Podľa Rockstaru tu majú domov aj motorkárske kluby.",
      "An industrial town whose life revolves around a sugar refinery. According to Rockstar, it's also home to biker clubs.",
      [("Robotník z rafinérie", "Refinery worker"), ("Motorkár", "Biker"), ("Mechanik", "Mechanic")]),
-    ("port-gellhorn", (-85.6, 30.12), "Port Gellhorn",
+    ("port-gellhorn", (-6492, 3775), "Port Gellhorn",
      "Kedysi rušné prístavné letovisko, dnes skôr zabudnuté mesto s lacnými motelmi a ľuďmi, ktorí hľadajú, ako sa uživiť.",
      "Once a busy port resort, now more of a forgotten town with cheap motels and people trying to get by.",
      [("Majiteľ motela", "Motel owner"), ("Prístavný robotník", "Dock worker"), ("Drobný podvodník", "Small-time hustler")]),
-    ("mount-kalaga", (-82.7, 30.25), "Mount Kalaga",
+    ("mount-kalaga", (-3900, 6150), "Mount Kalaga",
      "Národný park s horami, lesmi a jazerami. Miesto na lov, rybolov a jazdu v teréne.",
      "A national park with mountains, forests and lakes. A place for hunting, fishing and off-roading.",
      [("Strážkyňa parku", "Park ranger"), ("Lovec", "Hunter"), ("Off-road sprievodca", "Off-road guide")]),
 ]
 
-# (id, kategória, (lon, lat), oblasť, SK názov, SK popis, EN názov, EN popis)
-POINTS = [
-    ("only-raw-records", "miesta", (-80.28, 25.86), "vice-city", "Only Raw Records",
-     "Nahrávacie štúdio, ktoré vedú Boobie Ike a Dre'Quan Priest. Dre'Quan verí, že tu má ďalšiu veľkú hviezdu.",
-     "Only Raw Records", "The record label run by Boobie Ike and Dre'Quan Priest. Dre'Quan believes he has the next big star."),
-    ("boobie-klub", "miesta", (-80.3, 25.72), "vice-city", "Boobieho striptízový klub",
-     "Jeden z podnikov Boobieho Ikea, popri nehnuteľnostiach a nahrávacom štúdiu.",
-     "Boobie's strip club", "One of Boobie Ike's businesses, alongside his real estate and his record label."),
-    ("rafineria", "miesta", (-81.05, 26.72), "ambrosia", "Rafinéria cukru",
-     "Okolo nej sa točí život v Ambrosii. Práca, peniaze aj problémy celého mesta.",
-     "Sugar refinery", "Life in Ambrosia revolves around it: the town's work, money and problems."),
-    ("jason", "postavy", (-80.82, 24.8), "leonida-keys", "Jason Duval",
-     "Vyrastal medzi podvodníkmi, prešiel armádou a teraz žije v Leonida Keys, kde robí pre miestnych drogových dílerov.",
-     "Jason Duval", "Grew up around grifters, spent time in the army and now lives in the Leonida Keys, working for local drug runners."),
-    ("brian", "postavy", (-81.42, 24.64), "leonida-keys", "Brian Heder",
-     "Pašerák starej školy, ktorý žije v Keys so svojou treťou manželkou Lori. Jasonovi dáva strechu nad hlavou výmenou za prácu.",
-     "Brian Heder", "An old-school smuggler living in the Keys with his third wife, Lori. He gives Jason a roof in exchange for work."),
-    ("boobie", "postavy", (-80.36, 25.8), "vice-city", "Boobie Ike",
-     "Legenda Vice City, ktorá premenila pouličnú minulosť na podnikanie: nehnuteľnosti, striptízový klub a Only Raw Records.",
-     "Boobie Ike", "A Vice City legend who turned his street past into business: real estate, a strip club and Only Raw Records."),
-    ("drequan", "postavy", (-80.22, 25.93), "vice-city", "Dre'Quan Priest",
-     "Bývalý díler, ktorý chce uspieť v hudobnom biznise. Spolu s Boobiem stojí za Only Raw Records.",
-     "Dre'Quan Priest", "A former dealer trying to make it in the music business. He runs Only Raw Records with Boobie."),
-    ("real-dimez", "postavy", (-80.12, 25.66), "vice-city", "Real Dimez",
-     "Bae-Luxe a Roxy, kamarátky zo strednej, ktoré preslávila virálna pieseň. Chcú z pozornosti na sieťach urobiť kariéru.",
-     "Real Dimez", "Bae-Luxe and Roxy, high school friends made famous by a viral song, trying to turn social media buzz into a career."),
-    ("plaze", "aktivity", (-80.08, 25.84), "vice-city", "Pláže Vice City",
-     "Piesok, slnko a ľudia, ktorí chcú byť videní. Ideálne miesto na RP stretnutia a natáčanie pre sociálne siete.",
-     "Vice City beaches", "Sand, sun and people who want to be seen. A natural place for RP meetups and social media content."),
-    ("kluby", "aktivity", (-80.2, 25.62), "vice-city", "Nočné kluby",
-     "Nočný život Vice City, ktorý Rockstar ukazuje od prvého traileru.",
-     "Nightclubs", "Vice City's nightlife, shown by Rockstar since the very first trailer."),
-    ("airboaty", "aktivity", (-80.98, 25.9), "grassrivers", "Airboaty a aligátory",
-     "Člny s obrovskou vrtuľou cez močiare Grassrivers. A aligátory, ktoré si z trailerov pamätá každý.",
-     "Airboats and alligators", "Giant-fan boats across the Grassrivers swamps, and the alligators everyone remembers from the trailers."),
-    ("motorkari", "aktivity", (-81.38, 27.02), "ambrosia", "Motorkárske kluby",
-     "Podľa Rockstaru majú v Ambrosii domov motorkárske kluby. Drsnejšia, vidiecka strana Leonidy.",
-     "Biker clubs", "According to Rockstar, biker clubs call Ambrosia home. The rougher, rural side of Leonida."),
-    ("rybarske-lode", "aktivity", (-80.6, 24.92), "leonida-keys", "Rybárske lode",
-     "Prístavy a lode v Keys. Pokojná práca na vode, alebo zásterka pre niečo iné.",
-     "Fishing boats", "Harbours and boats in the Keys. Quiet work on the water, or cover for something else."),
-    ("motely", "aktivity", (-85.85, 30.28), "port-gellhorn", "Lacné motely",
-     "Port Gellhorn je plný motelov, ktoré pamätajú lepšie časy. Miesto, kde sa ľudia schovávajú alebo začínajú odznova.",
-     "Cheap motels", "Port Gellhorn is full of motels that have seen better days. A place where people hide or start over."),
-    ("lov", "aktivity", (-82.45, 30.42), "mount-kalaga", "Lov",
-     "Mount Kalaga je podľa Rockstaru miesto na lov.",
-     "Hunting", "According to Rockstar, Mount Kalaga is a place for hunting."),
-    ("rybolov", "aktivity", (-82.95, 30.4), "mount-kalaga", "Rybolov",
-     "Jazerá v národnom parku Mount Kalaga.",
-     "Fishing", "The lakes of Mount Kalaga National Park."),
-    ("offroad", "aktivity", (-82.55, 30.05), "mount-kalaga", "Jazda v teréne",
-     "Lesné cesty a kopce Mount Kalaga na off-road.",
-     "Off-roading", "The forest trails and hills of Mount Kalaga."),
-]
 
-RP_DESC = {
-    "sk": "Nápad na RP postavu z oblasti {r}. Toto nie je miesto z hry, ale inšpirácia pre tvoj príbeh.",
-    "en": "An RP character idea from {r}. Not an in-game location, just inspiration for your story.",
-}
+def category(tags):
+    for cid, _, _, _, _, match in CATS[1:-1]:
+        if any(t in tags for t in match):
+            return cid
+    return "ostatne"
 
 
-def slug(s):
-    s = s.lower()
-    for a, b in zip("áäčďéíľĺňóôŕšťúýž", "aacdeillnoorstuyz"):
-        s = s.replace(a, b)
-    return re.sub(r"[^a-z0-9]+", "-", s).strip("-")
-
-
-def markers():
+def places():
+    """GTADB landmarks -> kompaktný zoznam: [id, názov, adresa, kategória, x, y, skutočné miesto, fotka v, vstup]."""
+    src = json.load(open(SRC, encoding="utf-8"))
     out = []
-    for rid, at, name, sk, en, ideas in REGIONS:
-        x, y = pt(*at)
-        out.append({"id": rid, "cat": "oblasti", "x": round(x, 1), "y": round(y, 1), "region": rid,
-                    "sk": {"t": name, "d": sk}, "en": {"t": name, "d": en}})
-        for i, (isk, ien) in enumerate(ideas):
-            ang = (i * 120 + 210) * 3.14159 / 180
-            out.append({"id": f"rp-{slug(ien)}", "cat": "rp", "region": rid,
-                        "x": round(x + 30 * math.cos(ang), 1), "y": round(y + 30 * math.sin(ang), 1),
-                        "sk": {"t": isk, "d": RP_DESC["sk"].format(r=name)},
-                        "en": {"t": ien, "d": RP_DESC["en"].format(r=name)}})
-    for pid, cat, at, rid, tsk, dsk, ten, den in POINTS:
-        x, y = pt(*at)
-        out.append({"id": pid, "cat": cat, "x": round(x, 1), "y": round(y, 1), "region": rid,
-                    "sk": {"t": tsk, "d": dsk}, "en": {"t": ten, "d": den}})
-    ids = [m["id"] for m in out]
-    assert len(ids) == len(set(ids)), "duplicitné id značky"
+    for lid, v in src.items():
+        ig, xy, igphoto, rl, _, _, tags, _, edited = v[:9]
+        if not xy or len(xy) < 2:
+            continue
+        parts = [p.strip() for p in ig.split(",")]
+        name = parts[0] if parts and parts[0] not in ("", "?") else ""
+        addr = ", ".join(p for p in parts[1:] if p)
+        rl = re.sub(r"(?<=.)\?$", "", rl or "").strip()
+        rl_name = rl.split(",")[0].strip() if rl and rl != "?" else ""
+        photo = edited[1] if igphoto and len(edited) > 1 and edited[1] else 0
+        out.append([lid, name, addr, category(tags), round(xy[0], 1), round(xy[1], 1), rl_name, photo,
+                    1 if "enterable" in tags else 0])
+    out.sort(key=lambda r: int(r[0][1:]) if r[0][1:].isdigit() else 0)
     return out
-
-
-UI = {
-    "sk": {
-        "h1": "Mapa Leonidy", "sub": "Interaktívna mapa GTA VI",
-        "intro": "Oblasti, miesta, postavy a aktivity, ktoré Rockstar oficiálne predstavil, plus nápady na RP postavy. Filtruj, hľadaj a označuj, čo už poznáš.",
-        "search": "Hľadať miesto, postavu…", "noresults": "Nič sme nenašli.",
-        "all": "Zobraziť všetko", "none": "Skryť všetko",
-        "found": "Nájdené", "hidefound": "Skryť nájdené", "reset": "Vynulovať",
-        "mark": "Označiť ako nájdené", "unmark": "Nájdené ✓", "copy": "Kopírovať odkaz", "copied": "Skopírované",
-        "approx": "Približná poloha", "region": "Oblasť", "filters": "Filtre", "close": "Zavrieť panel",
-        "zoomin": "Priblížiť", "zoomout": "Oddialiť", "fit": "Celá mapa",
-        "note": "Štylizovaná mapa, nie mapa z hry. Údaje podľa Rockstar Games, polohy sú orientačné. Nápady na RP postavy sú naše.",
-        "official": "Oficiálna mapa Leonidy na stiahnutie (Rockstar Games)",
-        "builder": "/rp/tvorba-postavy/", "cta": "Vytvoriť postavu",
-        "aria": "Interaktívna mapa Leonidy", "edit": "Súradnice",
-    },
-    "en": {
-        "h1": "Leonida map", "sub": "Interactive GTA VI map",
-        "intro": "Areas, places, characters and activities officially revealed by Rockstar, plus RP character ideas. Filter, search and mark what you already know.",
-        "search": "Search a place or character…", "noresults": "Nothing found.",
-        "all": "Show all", "none": "Hide all",
-        "found": "Found", "hidefound": "Hide found", "reset": "Reset",
-        "mark": "Mark as found", "unmark": "Found ✓", "copy": "Copy link", "copied": "Copied",
-        "approx": "Approximate position", "region": "Area", "filters": "Filters", "close": "Close panel",
-        "zoomin": "Zoom in", "zoomout": "Zoom out", "fit": "Full map",
-        "note": "Stylised map, not the in-game map. Data based on Rockstar Games, positions are approximate. RP character ideas are our own.",
-        "official": "Download the official Leonida map (Rockstar Games)",
-        "builder": "/en/rp/character-builder/", "cta": "Create a character",
-        "aria": "Interactive map of Leonida", "edit": "Coordinates",
-    },
-}
-OFFICIAL_URL = "https://www.rockstargames.com/VI"
-SEARCH_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'
 
 
 def icon(name):
     return f'<svg viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>'
 
 
-def section(lang, base_url):
+UI = {
+    "sk": {
+        "h1": "Mapa Leonidy", "sub": "Interaktívna mapa GTA VI",
+        "intro": "Celá Leonida s viac ako 3 600 miestami: hotely, obchody, reštaurácie, doprava a ďalšie. Filtruj, hľadaj a označuj, čo už poznáš.",
+        "search": "Hľadať miesto, postavu…", "noresults": "Nič sme nenašli.",
+        "all": "Zobraziť všetko", "none": "Skryť všetko",
+        "found": "Nájdené", "hidefound": "Skryť nájdené", "reset": "Vynulovať",
+        "mark": "Označiť ako nájdené", "unmark": "Nájdené ✓", "copy": "Kopírovať odkaz", "copied": "Skopírované",
+        "region": "Oblasť", "filters": "Filtre", "close": "Zavrieť panel",
+        "zoomin": "Priblížiť", "zoomout": "Oddialiť", "fit": "Celá mapa",
+        "note": "Mapa a miesta: GTADB.org a prispievatelia, licencia CC BY 4.0, upravené (preklad kategórií, výber vrstvy). Popisy oblastí a nápady na RP postavy sú naše.",
+        "nameless": "Názov v hre zatiaľ neznámy", "real": "V skutočnosti", "enterable": "Dá sa vstúpiť", "onlyenter": "Len budovy, do ktorých sa dá vstúpiť",
+        "photo": "Záber z hry", "ideas": "Nápady na RP postavu", "places": "miest", "loading": "Načítavam miesta…",
+        "official": "Otvoriť GTADB.org",
+        "builder": "/rp/tvorba-postavy/", "cta": "Vytvoriť postavu",
+        "aria": "Interaktívna mapa Leonidy", "edit": "Súradnice",
+    },
+    "en": {
+        "h1": "Leonida map", "sub": "Interactive GTA VI map",
+        "intro": "All of Leonida with more than 3,600 places: hotels, shops, restaurants, transport and more. Filter, search and mark what you already know.",
+        "search": "Search a place or character…", "noresults": "Nothing found.",
+        "all": "Show all", "none": "Hide all",
+        "found": "Found", "hidefound": "Hide found", "reset": "Reset",
+        "mark": "Mark as found", "unmark": "Found ✓", "copy": "Copy link", "copied": "Copied",
+        "region": "Area", "filters": "Filters", "close": "Close panel",
+        "zoomin": "Zoom in", "zoomout": "Zoom out", "fit": "Full map",
+        "note": "Map and places: GTADB.org and contributors, licensed CC BY 4.0, adapted (category translation, layer choice). Area descriptions and RP character ideas are our own.",
+        "nameless": "In-game name not known yet", "real": "Real-life counterpart", "enterable": "Enterable", "onlyenter": "Only buildings you can enter",
+        "photo": "In-game shot", "ideas": "RP character ideas", "places": "places", "loading": "Loading places…",
+        "official": "Open GTADB.org",
+        "builder": "/en/rp/character-builder/", "cta": "Create a character",
+        "aria": "Interactive map of Leonida", "edit": "Coordinates",
+    },
+}
+SEARCH_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'
+
+
+def section(lang, v):
     t = UI[lang]
-    data = {"lang": lang, "base": base_url, "w": BASE_W, "h": BASE_H, "ui": t,
-            "cats": [{"id": c["id"], "color": c["color"], "icon": ICONS[c["icon"]], "name": c[lang]} for c in CATS],
-            "markers": [{"id": m["id"], "cat": m["cat"], "x": m["x"], "y": m["y"], "region": m["region"],
-                         "t": m[lang]["t"], "d": m[lang]["d"]} for m in markers()]}
+    pl = places()
     counts = {}
-    for m in data["markers"]:
-        counts[m["cat"]] = counts.get(m["cat"], 0) + 1
+    for p in pl:
+        counts[p[3]] = counts.get(p[3], 0) + 1
+    counts["oblasti"] = len(REGIONS)
+    total = len(pl) + len(REGIONS)
+    x0, y0, x1, y1 = TILE_RANGE_Z5
+    data = {"lang": lang, "ui": t, "tiles": TILES, "places": f"/{OUT}?v={v['places']}", "photos": PHOTOS,
+            "gtadb": GTADB, "total": total,
+            "bounds": [[16384 - (y1 + 1) * 256, x0 * 256 - 16384], [16384 - y0 * 256, (x1 + 1) * 256 - 16384]],
+            "cats": [{"id": c[0], "color": c[2], "icon": ICONS[c[1]], "name": c[3] if lang == "sk" else c[4]} for c in CATS],
+            "regions": [{"id": r[0], "x": r[1][0], "y": r[1][1], "t": r[2], "d": r[3] if lang == "sk" else r[4],
+                         "rp": [i[0] if lang == "sk" else i[1] for i in r[5]]} for r in REGIONS]}
     groups = ""
-    for gid, gsk, gen in GROUPS:
+    cat = {c[0]: c for c in CATS}
+    for gid, ids, gsk, gen in GROUPS:
         chips = "".join(
-            f'<button type="button" class="mg-cat" data-cat="{c["id"]}" aria-pressed="true" style="--c:{c["color"]}">'
-            f'<span class="mg-ico">{icon(c["icon"])}</span><span class="mg-cat-name">{html.escape(c[lang])}</span>'
-            f'<span class="mg-cat-n">{counts.get(c["id"], 0)}</span></button>'
-            for c in CATS if c["group"] == gid)
+            f'<button type="button" class="mg-cat" data-cat="{cid}" aria-pressed="true" style="--c:{cat[cid][2]}">'
+            f'<span class="mg-ico">{icon(cat[cid][1])}</span><span class="mg-cat-name">{html.escape(cat[cid][3] if lang == "sk" else cat[cid][4])}</span>'
+            f'<span class="mg-cat-n">{counts.get(cid, 0):,}</span></button>'.replace(",", "\u00a0")
+            for cid in ids if counts.get(cid))
         groups += f'<div class="mg-group"><h2>{gsk if lang == "sk" else gen}</h2><div class="mg-cats">{chips}</div></div>'
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    lic = LICENSE + ("sk" if lang == "sk" else "en")
     return (
         '<section class="mg" data-mg aria-labelledby="mg-title">'
         f'<aside class="mg-panel" id="mg-panel" aria-label="{t["filters"]}">'
@@ -296,20 +199,24 @@ def section(lang, base_url):
         f'<div class="mg-search"><label class="mg-search-box">{SEARCH_ICON}<input type="search" placeholder="{t["search"]}" aria-label="{t["search"]}" autocomplete="off"></label>'
         '<ul class="mg-results" role="listbox" hidden></ul></div>'
         f'<div class="mg-bulk"><button type="button" data-all>{t["all"]}</button><button type="button" data-none>{t["none"]}</button></div>'
+        f'<label class="mg-switch"><input type="checkbox" data-enter> <span>{t["onlyenter"]}</span></label>'
         + groups +
-        f'<div class="mg-progress"><div class="mg-progress-top"><span>{t["found"]}</span><b><span data-found>0</span> / {len(data["markers"])}</b></div>'
+        f'<div class="mg-progress"><div class="mg-progress-top"><span>{t["found"]}</span><b><span data-found>0</span> / {total:,}</b></div>'.replace(",", "\u00a0") +
         '<div class="mg-bar"><i data-bar></i></div>'
         f'<div class="mg-progress-actions"><label><input type="checkbox" data-hidefound> {t["hidefound"]}</label>'
         f'<button type="button" data-reset>{t["reset"]}</button></div></div>'
-        f'<p class="mg-note">{t["note"]} <a href="{OFFICIAL_URL}" target="_blank" rel="noopener">{t["official"]} ↗</a></p>'
+        f'<p class="mg-note">{t["note"]} <a href="{GTADB}" target="_blank" rel="noopener">{t["official"]} ↗</a> · '
+        f'<a href="{lic}" target="_blank" rel="noopener license">CC BY 4.0</a></p>'
         f'<a class="button mg-cta" href="{t["builder"]}">{t["cta"]} ↗</a>'
         '</aside>'
         f'<div class="mg-map" role="region" aria-label="{t["aria"]}"><div class="mg-leaflet"></div>'
+        f'<div class="mg-loading" data-loading>{t["loading"]}</div>'
         f'<button type="button" class="mg-open" aria-controls="mg-panel" aria-expanded="false">{icon("region")}<span>{t["filters"]}</span></button>'
         '<div class="mg-hud" aria-hidden="true"><b>LEONIDA · GPS</b><span data-coords></span></div>'
         '</div>'
         f'<script type="application/json" id="mg-data">{payload}</script>'
         '</section>')
+
 
 PAGE = {
     "sk": dict(tpl="rp.html", out="mapa.html", url="/mapa/", other="/en/map/", tpl_url="/rp/", tpl_other="/en/rp/",
@@ -349,7 +256,7 @@ def page(lang, css, v):
         {"@type": "ListItem", "position": 1, "name": "GTA6RP.sk", "item": SITE + c["home"]},
         {"@type": "ListItem", "position": 2, "name": c["crumb"], "item": SITE + c["url"]}]}
     main = (f'<main id="main">{crumbs}<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'
-            + section(lang, f"/{BASE}?v={v['base']}") + "</main>")
+            + section(lang, v) + "</main>")
     body = re.sub(r'<main id="main">.*</main>', lambda _: main, body, count=1, flags=re.S)
     open(os.path.join(WEB, c["out"]), "w", encoding="utf-8").write(head + "</head>" + body)
     print("ok", c["out"])
@@ -371,6 +278,7 @@ def menu():
 
 
 
+
 def minify_css(css):
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     return re.sub(r"\s*([{};:,>])\s*", r"\1", re.sub(r"\s+", " ", css)).replace(";}", "}").strip()
@@ -381,13 +289,15 @@ def ver(rel):
 
 
 def main():
-    open(os.path.join(WEB, BASE), "w", encoding="utf-8").write(base_svg())
+    pl = places()
+    open(os.path.join(WEB, OUT), "w", encoding="utf-8").write(json.dumps(pl, ensure_ascii=False, separators=(",", ":")))
     css = minify_css(open(os.path.join(WEB, "zdroj/leonida.css"), encoding="utf-8").read())
     v = {"leaflet.css": ver("assets/leaflet.css"), "leaflet.js": ver("assets/leaflet.js"),
-         "mapa.js": ver("assets/mapa.js"), "base": ver(BASE)}
+         "mapa.js": ver("assets/mapa.js"), "places": ver(OUT)}
     menu()
     for lang in ("sk", "en"):
         page(lang, css, v)
+    print(len(pl), "miest")
 
 
 if __name__ == "__main__":
